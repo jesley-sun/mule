@@ -82,21 +82,6 @@ public final class ElementDescriptor
         return childs.get(childName);
     }
 
-    public Collection<ElementDescriptor> getChilds() {
-        return childsAux;
-    }
-
-    public ElementDescriptor getChildByIndex(int index)
-    {
-        if (childs.entries().size() <= index)
-        {
-            return null;
-        }
-
-        Collection<ElementDescriptor> values = (Collection<ElementDescriptor>) ((LinkedListMultimap) childs).values().get(index);
-        return CollectionUtils.isEmpty(values) ? null : values.iterator().next();
-    }
-
     public Element getSourceElement()
     {
         return sourceElement;

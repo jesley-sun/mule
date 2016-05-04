@@ -97,6 +97,7 @@ public class SchemaGeneratorTestCase extends AbstractMuleTestCase
         XmlModelProperty capability = extensionModel.getModelProperty(XmlModelProperty.class).get();
 
         String schema = generator.generate(extensionModel, capability);
+
         compareXML(expectedSchema, schema);
     }
 }
