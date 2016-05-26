@@ -8,9 +8,9 @@ package org.mule.runtime.module.extension.internal.introspection.validation;
 
 import static java.util.stream.Collectors.toList;
 import static org.mule.metadata.java.utils.JavaTypeUtils.getType;
+import static org.mule.runtime.module.extension.internal.util.MuleExtensionUtils.getClassLoader;
 import static org.mule.runtime.module.extension.internal.util.NameUtils.getTopLevelTypeName;
 import org.mule.metadata.api.model.MetadataType;
-import org.mule.metadata.java.utils.JavaTypeUtils;
 import org.mule.runtime.extension.api.exception.IllegalModelDefinitionException;
 import org.mule.runtime.extension.api.introspection.ExtensionModel;
 import org.mule.runtime.extension.api.introspection.property.ImportedTypesModelProperty;
@@ -59,7 +59,7 @@ public final class SubtypesModelValidator implements ModelValidator
         for (List<MetadataType> subtypes : typesMapping.values())
         {
             abstractSubtypes.addAll(
-                    subtypes.stream().map(JavaTypeUtils::getType)
+                    subtypes.stream().map(s -> getType(s, getClassLoader(model)))
                             .filter(s -> !IntrospectionUtils.isInstantiable(s))
                             .map(Class::getSimpleName).collect(toList()));
         }
@@ -77,10 +77,10 @@ public final class SubtypesModelValidator implements ModelValidator
     {
         for (Map.Entry<MetadataType, List<MetadataType>> subtypes : typesMapping.entrySet())
         {
-            Class<?> baseType = getType(subtypes.getKey());
+            Class<?> baseType = getType(subtypes.getKey(), getClassLoader(model));
 
             List<String> invalidTypes = subtypes.getValue().stream()
-                    .map(JavaTypeUtils::getType)
+                    .map(s -> getType(s, getClassLoader(model)))
                     .filter(s -> !baseType.isAssignableFrom(s))
                     .map(Class::getSimpleName).collect(toList());
 
@@ -111,11 +111,10 @@ public final class SubtypesModelValidator implements ModelValidator
                 throw new IllegalModelDefinitionException(
                         String.format("Subtypes mapped Type [%s] with alias [%s] in extension [%s] should have a different alias name " +
                                       "than the previous mapped type [%s]",
-                                      getType(type).getSimpleName(), getTopLevelTypeName(type),
-                                      model.getName(), getType(previousType).getSimpleName())
+                                      getType(type, getClassLoader(model)).getSimpleName(), getTopLevelTypeName(type),
+                                      model.getName(), getType(previousType, getClassLoader(model)).getSimpleName())
                 );
             }
         }
     }
-
 }
