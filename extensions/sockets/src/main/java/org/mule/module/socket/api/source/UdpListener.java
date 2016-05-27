@@ -11,22 +11,15 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
 import org.mule.module.socket.api.client.UdpListenerClient;
-import org.mule.module.socket.api.exceptions.UnresolvableHostException;
-import org.mule.module.socket.internal.ConnectionEvent;
-import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.message.MuleMessage;
-import org.mule.runtime.api.metadata.DataType;
-import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.FlowConstructAware;
-import org.mule.runtime.core.transformer.types.DataTypeFactory;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.runtime.source.Source;
 
-import java.io.IOException;
-import java.util.Optional;
+import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Alias("udp-listener")
-public class UdpListener extends Source<Object, ImmutableSocketAttributes> implements FlowConstructAware
+public class UdpListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UdpListener.class);
@@ -54,6 +47,7 @@ public class UdpListener extends Source<Object, ImmutableSocketAttributes> imple
     @Override
     public void start() throws Exception
     {
+        client.setMuleContext(muleContext);
         executorService = newSingleThreadExecutor(r -> new Thread(r, format("%s%s.udp.listener", getPrefix(muleContext), flowConstruct.getName())));
         executorService.execute(this::listen);
     }
@@ -63,7 +57,6 @@ public class UdpListener extends Source<Object, ImmutableSocketAttributes> imple
 
         for (; ; )
         {
-
             if (isRequestedToStop())
             {
                 return;
@@ -71,22 +64,16 @@ public class UdpListener extends Source<Object, ImmutableSocketAttributes> imple
 
             try
             {
-                Optional<ConnectionEvent> event = client.receive();
-                if (event.isPresent())
+                java.util.Optional<MuleMessage<InputStream, SocketAttributes>> message = client.receive();
+
+                if (isRequestedToStop() || !message.isPresent())
                 {
-                    processNewConnection(event.get());
+                    return;
                 }
+
+                sourceContext.getMessageHandler().handle(message.get());
             }
-            catch (ConnectionException e)
-            {
-                // TODO is this the right behaviour?
-                sourceContext.getExceptionCallback().onException(e);
-            }
-            catch (UnresolvableHostException e)
-            {
-                sourceContext.getExceptionCallback().onException(e);
-            }
-            catch (IOException e)
+            catch (Exception e)
             {
                 sourceContext.getExceptionCallback().onException(e);
             }
@@ -97,11 +84,7 @@ public class UdpListener extends Source<Object, ImmutableSocketAttributes> imple
     @Override
     public void stop()
     {
-        // todo check defensiveness
-        if (client != null)
-        {
-            client.disconnect();
-        }
+        client.disconnect();
         stopRequested.set(true);
         shutdownExecutor();
     }
@@ -143,34 +126,6 @@ public class UdpListener extends Source<Object, ImmutableSocketAttributes> imple
     public void setFlowConstruct(FlowConstruct flowConstruct)
     {
         this.flowConstruct = flowConstruct;
-    }
-
-    private void processNewConnection(ConnectionEvent event) throws IOException, UnresolvableHostException, ConnectionException
-    {
-        LOGGER.debug("Processing new connection");
-        if (isRequestedToStop())
-        {
-            return;
-        }
-
-        sourceContext.getMessageHandler().handle(createMessage(event));
-    }
-
-    private DataType<Object> getMessageDataType(DataType<?> originalDataType)
-    {
-        DataType<Object> newDataType = DataTypeFactory.create(Object.class);
-        newDataType.setEncoding(originalDataType.getEncoding());
-
-        //String presumedMimeType = mimetypesFileTypeMap.getContentType(attributes.getPath());
-        //newDataType.setMimeType(presumedMimeType != null ? presumedMimeType : originalDataType.getMimeType());
-
-        return newDataType;
-    }
-
-    private MuleMessage<Object, ImmutableSocketAttributes> createMessage(ConnectionEvent event) throws IOException, ConnectionException, UnresolvableHostException
-    {
-        DataType dataType = getMessageDataType(DataTypeFactory.create(Object.class));
-        return (MuleMessage) new DefaultMuleMessage(event.getContent(), dataType, event.getAttributes(), muleContext);
     }
 
 }

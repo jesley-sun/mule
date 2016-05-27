@@ -9,16 +9,18 @@ package org.mule.module.socket.api.client;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.protocol.TcpProtocol;
 import org.mule.module.socket.api.source.ImmutableSocketAttributes;
+import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.module.socket.api.tcp.TcpServerSocketProperties;
-import org.mule.module.socket.internal.ConnectionEvent;
 import org.mule.module.socket.internal.SocketUtils;
 import org.mule.module.socket.internal.StreamingSocketInputStream;
 import org.mule.module.socket.internal.stream.SocketInputStream;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.message.MuleMessage;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,7 +37,6 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
 
     private ServerSocket socket;
     private TcpServerSocketProperties socketProperties;
-
 
     public TcpListenerClient(TcpServerSocketProperties socketProperties, TcpProtocol protocol, String host, Integer port) throws ConnectionException
     {
@@ -97,7 +98,21 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
     {
         try
         {
+            // todo same code as configuring a requester socket
             newConnection.setSoTimeout(socketProperties.getTimeout());
+            newConnection.setTcpNoDelay(true);
+            newConnection.setReceiveBufferSize(socketProperties.getReceiveBufferSize());
+            newConnection.setSendBufferSize(socketProperties.getSendBufferSize());
+
+            if (socketProperties.getKeepAlive() != null)
+            {
+                newConnection.setKeepAlive(socketProperties.getKeepAlive());
+            }
+
+            if (socketProperties.getLinger() != null)
+            {
+                newConnection.setSoLinger(true, socketProperties.getLinger());
+            }
         }
         catch (SocketException e)
         {
@@ -106,7 +121,7 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
     }
 
     @Override
-    public Optional<ConnectionEvent> receive() throws ConnectionException, IOException
+    public Optional<MuleMessage<InputStream, SocketAttributes>> receive() throws ConnectionException, IOException
     {
 
         Optional<Socket> incomingConnection = listen();
@@ -117,6 +132,7 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
         }
 
         Socket socket = incomingConnection.get();
+        SocketAttributes socketAttributes = new ImmutableSocketAttributes(socket);
 
         // todo this is quite an ugly chainning
         DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(new SocketInputStream(socket)));
@@ -124,7 +140,7 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
 
         try
         {
-            return Optional.of(new ConnectionEvent(protocol.read(inputStream), new ImmutableSocketAttributes(socket)));
+            return Optional.of(createMuleMessage(protocol.read(inputStream), socketAttributes));
         }
         catch (IOException e)
         {
@@ -133,7 +149,7 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
                 throw e;
             }
 
-            return Optional.of(new ConnectionEvent(new ImmutableSocketAttributes(socket)));
+            return Optional.of(createMuleMessageWithNullPayload(socketAttributes));
         }
         finally
         {
@@ -161,5 +177,4 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
             throw new ConnectionException("Listener TCP socket is invalid");
         }
     }
-
 }

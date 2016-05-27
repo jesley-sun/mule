@@ -6,13 +6,15 @@
  */
 package org.mule.module.socket.api.client;
 
-import org.mule.module.socket.internal.ConnectionEvent;
+import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.message.MuleMessage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 public interface ListenerSocket
 {
-    Optional<ConnectionEvent> receive() throws ConnectionException, IOException;
+    Optional<MuleMessage<InputStream, SocketAttributes>> receive() throws ConnectionException, IOException;
 }

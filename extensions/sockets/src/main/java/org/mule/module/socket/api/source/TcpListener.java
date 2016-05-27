@@ -11,27 +11,18 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
 import org.mule.module.socket.api.client.TcpListenerClient;
-import org.mule.module.socket.api.config.ListenerConfig;
 import org.mule.module.socket.api.protocol.SafeProtocol;
 import org.mule.module.socket.api.protocol.TcpProtocol;
-import org.mule.module.socket.internal.ConnectionEvent;
-import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.message.MuleMessage;
-import org.mule.runtime.api.message.NullPayload;
-import org.mule.runtime.api.metadata.DataType;
-import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.FlowConstructAware;
-import org.mule.runtime.core.transformer.types.DataTypeFactory;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.runtime.source.Source;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,16 +33,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Alias("tcp-listener")
-public class TcpListener extends Source<Object, ImmutableSocketAttributes> implements FlowConstructAware
+public class TcpListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpListener.class);
     private ExecutorService executorService;
     private FlowConstruct flowConstruct;
-
-
-    @UseConfig
-    private ListenerConfig config;
 
     @Inject
     private MuleContext muleContext;
@@ -68,13 +55,13 @@ public class TcpListener extends Source<Object, ImmutableSocketAttributes> imple
     @Override
     public void start() throws Exception
     {
+        client.setMuleContext(muleContext);
         executorService = newSingleThreadExecutor(r -> new Thread(r, format("%s%s.tcp.listener", getPrefix(muleContext), flowConstruct.getName())));
         executorService.execute(this::listen);
     }
 
     private void listen()
     {
-        LOGGER.debug("Started listener");
         for (; ; )
         {
             if (isRequestedToStop())
@@ -84,53 +71,26 @@ public class TcpListener extends Source<Object, ImmutableSocketAttributes> imple
 
             try
             {
-                java.util.Optional<ConnectionEvent> event = client.receive();
-                if (event.isPresent())
+                java.util.Optional<MuleMessage<InputStream, SocketAttributes>> message = client.receive();
+
+                if (isRequestedToStop() || !message.isPresent())
                 {
-                    processNewConnection(event.get());
+                    return;
                 }
+
+                sourceContext.getMessageHandler().handle(message.get());
             }
-            catch (ConnectionException e)
+            catch (Exception e)
             {
-                e.printStackTrace();
                 sourceContext.getExceptionCallback().onException(e);
             }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
         }
-    }
-
-    private MuleMessage<Object, ImmutableSocketAttributes> createMessage(ConnectionEvent event)
-    {
-        DataType dataType = DataTypeFactory.create(InputStream.class);
-        // todo encoding
-        return (MuleMessage) new DefaultMuleMessage(event.getContent() == null ? NullPayload.getInstance() : event.getContent()
-                , dataType, event.getAttributes(), muleContext);
-    }
-
-    private void processNewConnection(ConnectionEvent event)
-    {
-
-        if (isRequestedToStop())
-        {
-            return;
-        }
-
-        sourceContext.getMessageHandler().handle(createMessage(event));
-
     }
 
     @Override
     public void stop()
     {
-        // todo this is kinda defensive right?
-        if (client != null)
-        {
-            client.disconnect();
-        }
-
+        client.disconnect();
         stopRequested.set(true);
         shutdownExecutor();
     }
