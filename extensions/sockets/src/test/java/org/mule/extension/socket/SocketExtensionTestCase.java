@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import org.mule.functional.junit4.ExtensionFunctionalTestCase;
 import org.mule.module.socket.api.SocketsExtension;
 import org.mule.module.socket.api.source.ImmutableSocketAttributes;
@@ -70,6 +71,11 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
 
     protected void assertPojo(MuleMessage<?, ImmutableSocketAttributes> message, TestPojo expectedContent) throws Exception
     {
+        if (message.getPayload() == null)
+        {
+            fail("Null payload");
+        }
+
         TestPojo pojo = (TestPojo) deserializeMessage(message);
         MatcherAssert.assertThat(pojo.getAge(), is(expectedContent.getAge()));
         MatcherAssert.assertThat(pojo.getName(), is(expectedContent.getName()));

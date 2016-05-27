@@ -9,11 +9,17 @@ package org.mule.module.socket.internal;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.mule.module.socket.api.client.SocketClient;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
+import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionExceptionCode;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.message.MuleMessage;
+import org.mule.runtime.api.message.NullPayload;
+import org.mule.runtime.api.metadata.DataType;
+import org.mule.runtime.core.DefaultMuleMessage;
+import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
+import org.mule.runtime.core.transformer.types.DataTypeFactory;
 import org.mule.runtime.core.util.IOUtils;
 
 import java.io.IOException;
@@ -141,5 +147,27 @@ public class SocketUtils
         {
             throw new UnresolvableHostException(String.format("Host name '%s' could not be resolved", host));
         }
+    }
+
+    public static MuleMessage<InputStream, SocketAttributes> createMuleMessage(InputStream content, SocketAttributes attributes, MuleContext muleContext)
+    {
+        DataType dataType = DataTypeFactory.create(InputStream.class);
+        Object payload = NullPayload.getInstance();
+        MuleMessage<InputStream, SocketAttributes> message;
+
+        if (content != null)
+        {
+            payload = content;
+        }
+
+        message = (MuleMessage) new DefaultMuleMessage(payload, dataType, attributes, muleContext);
+        return message;
+    }
+
+    public static MuleMessage<InputStream, SocketAttributes> createMuleMessageWithNullPayload(SocketAttributes attributes, MuleContext muleContext)
+    {
+        Object payload = NullPayload.getInstance();
+        DataType dataType = DataTypeFactory.create(NullPayload.class);
+        return (MuleMessage) new DefaultMuleMessage(payload, dataType, attributes, muleContext);
     }
 }

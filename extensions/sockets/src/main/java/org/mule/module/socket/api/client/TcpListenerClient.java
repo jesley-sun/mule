@@ -8,19 +8,13 @@ package org.mule.module.socket.api.client;
 
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.protocol.TcpProtocol;
-import org.mule.module.socket.api.source.ImmutableSocketAttributes;
-import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.module.socket.api.tcp.TcpServerSocketProperties;
+import org.mule.module.socket.internal.SocketDelegate;
+import org.mule.module.socket.internal.TcpSocketDelegate;
 import org.mule.module.socket.internal.SocketUtils;
-import org.mule.module.socket.internal.StreamingSocketInputStream;
-import org.mule.module.socket.internal.stream.SocketInputStream;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.message.MuleMessage;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -121,40 +115,18 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
     }
 
     @Override
-    public Optional<MuleMessage<InputStream, SocketAttributes>> receive() throws ConnectionException, IOException
+    public SocketDelegate receive() throws ConnectionException, IOException
     {
 
         Optional<Socket> incomingConnection = listen();
 
         if (!incomingConnection.isPresent())
         {
-            return Optional.empty();
+            // todo throw
         }
 
         Socket socket = incomingConnection.get();
-        SocketAttributes socketAttributes = new ImmutableSocketAttributes(socket);
-
-        // todo this is quite an ugly chainning
-        DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(new SocketInputStream(socket)));
-        StreamingSocketInputStream inputStream = new StreamingSocketInputStream(underlyingIs);
-
-        try
-        {
-            return Optional.of(createMuleMessage(protocol.read(inputStream), socketAttributes));
-        }
-        catch (IOException e)
-        {
-            if (protocol.getRethrowExceptionOnRead())
-            {
-                throw e;
-            }
-
-            return Optional.of(createMuleMessageWithNullPayload(socketAttributes));
-        }
-        finally
-        {
-            inputStream.close();
-        }
+        return new TcpSocketDelegate(socket, protocol, muleContext);
     }
 
     public synchronized void disconnect()

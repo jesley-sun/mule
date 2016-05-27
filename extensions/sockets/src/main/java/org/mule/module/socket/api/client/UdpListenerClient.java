@@ -8,20 +8,16 @@ package org.mule.module.socket.api.client;
 
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.source.ImmutableSocketAttributes;
-import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
+import org.mule.module.socket.internal.SocketDelegate;
 import org.mule.module.socket.internal.SocketUtils;
+import org.mule.module.socket.internal.UdpSocketDelegate;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.message.MuleMessage;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.Arrays;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,33 +44,21 @@ public class UdpListenerClient extends AbstractUdpClient implements ListenerSock
         initialise();
     }
 
-    public Optional<MuleMessage<InputStream, SocketAttributes>> receive() throws ConnectionException, UnresolvableHostException
+    public SocketDelegate receive() throws ConnectionException, UnresolvableHostException
     {
 
         DatagramPacket packet = createPacket();
         try
         {
-            if (socketProperties.getTimeout() > 0)
-            {
-                socket.setSoTimeout(socketProperties.getTimeout());
-            }
             socket.receive(packet);
-            SocketAttributes socketAttributes = new ImmutableSocketAttributes(socket);
-
-            if (packet.getLength() > 0)
-            {
-                return Optional.of(createMuleMessage(new ByteArrayInputStream(Arrays.copyOf(packet.getData(), packet.getLength())), socketAttributes));
-            }
-            else
-            {
-                LOGGER.debug(String.format("Received packet without content from host '%s' port '%d'", host, port));
-                return Optional.of(createMuleMessageWithNullPayload(socketAttributes));
-            }
         }
         catch (IOException e)
         {
             LOGGER.error(String.format("An error occurred when receiving from UDP socket listening in host '%s' port '%d'", host, port));
-            return Optional.empty();
+        }
+        finally
+        {
+            return new UdpSocketDelegate(packet, new ImmutableSocketAttributes(socket), muleContext);
         }
     }
 
