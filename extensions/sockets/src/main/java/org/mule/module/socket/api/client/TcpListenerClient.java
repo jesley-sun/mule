@@ -66,6 +66,7 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
         }
     }
 
+    // todo this shouldnt be optional
     private Optional<Socket> listen() throws IOException, ConnectionException
     {
         try
@@ -115,18 +116,18 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
     }
 
     @Override
-    public SocketDelegate receive() throws ConnectionException, IOException
+    public Optional<SocketDelegate> receive() throws ConnectionException, IOException
     {
 
         Optional<Socket> incomingConnection = listen();
 
         if (!incomingConnection.isPresent())
         {
-            // todo throw
+            return Optional.empty();
         }
 
         Socket socket = incomingConnection.get();
-        return new TcpSocketDelegate(socket, protocol, muleContext);
+        return Optional.of(new TcpSocketDelegate(socket, protocol, muleContext));
     }
 
     public synchronized void disconnect()

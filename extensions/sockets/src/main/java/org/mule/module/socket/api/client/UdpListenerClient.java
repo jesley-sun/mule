@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,21 +45,19 @@ public class UdpListenerClient extends AbstractUdpClient implements ListenerSock
         initialise();
     }
 
-    public SocketDelegate receive() throws ConnectionException, UnresolvableHostException
+    public Optional<SocketDelegate> receive() throws ConnectionException, UnresolvableHostException
     {
 
         DatagramPacket packet = createPacket();
         try
         {
             socket.receive(packet);
+            return Optional.of(new UdpSocketDelegate(packet, new ImmutableSocketAttributes(socket), muleContext));
         }
         catch (IOException e)
         {
             LOGGER.error(String.format("An error occurred when receiving from UDP socket listening in host '%s' port '%d'", host, port));
-        }
-        finally
-        {
-            return new UdpSocketDelegate(packet, new ImmutableSocketAttributes(socket), muleContext);
+            return Optional.empty();
         }
     }
 

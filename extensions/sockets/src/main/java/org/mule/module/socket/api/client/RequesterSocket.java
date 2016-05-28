@@ -9,7 +9,7 @@ package org.mule.module.socket.api.client;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.runtime.api.connection.ConnectionException;
 
-public interface RequesterSocket
+public interface RequesterSocket extends SocketClient
 {
     void send(Object data) throws ConnectionException;
 

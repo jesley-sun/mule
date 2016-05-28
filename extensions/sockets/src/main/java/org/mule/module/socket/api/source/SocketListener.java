@@ -10,7 +10,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
-import org.mule.module.socket.api.client.UdpListenerClient;
+import org.mule.module.socket.api.client.ListenerSocket;
 import org.mule.module.socket.internal.SocketDelegate;
 import org.mule.module.socket.internal.UdpSocketDelegate;
 import org.mule.runtime.core.api.MuleContext;
@@ -20,6 +20,7 @@ import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.runtime.source.Source;
 
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -28,7 +29,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractSocketListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware
+public class SocketListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UdpSocketDelegate.class);
@@ -39,7 +40,7 @@ public abstract class AbstractSocketListener extends Source<InputStream, SocketA
     private MuleContext muleContext;
 
     @Connection
-    private UdpListenerClient client;
+    private ListenerSocket client;
 
     private AtomicBoolean stopRequested = new AtomicBoolean(false);
 
@@ -63,14 +64,21 @@ public abstract class AbstractSocketListener extends Source<InputStream, SocketA
 
             try
             {
-                SocketDelegate delegate = client.receive();
+                Optional<SocketDelegate> delegate = client.receive();
+
+                // An error receiving a connection, just wait for another one
+                if (!delegate.isPresent())
+                {
+                    continue;
+                }
+
                 if (isRequestedToStop())
                 {
-                    delegate.close();
+                    delegate.get().close();
                     return;
                 }
 
-                sourceContext.getMessageHandler().handle(delegate.getMuleMessage());
+                sourceContext.getMessageHandler().handle(delegate.get().getMuleMessage());
             }
             catch (Exception e)
             {

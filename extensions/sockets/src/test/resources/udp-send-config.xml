@@ -27,7 +27,7 @@
     </flow>
 
     <flow name="udp-listen">
-        <sockets:udp-listener config-ref="udp-listener"/>
+        <sockets:socket-listener config-ref="udp-listener"/>
         <flow-ref name="onIncomingConnection"/>
     </flow>
 

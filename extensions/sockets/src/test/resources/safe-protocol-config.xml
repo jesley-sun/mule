@@ -26,7 +26,7 @@
     </flow>
 
     <flow name="tcp-listen">
-        <sockets:tcp-listener config-ref="tcp-listener"/>
+        <sockets:socket-listener config-ref="tcp-listener"/>
         <flow-ref name="onIncomingConnection"/>
     </flow>
 

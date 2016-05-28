@@ -8,10 +8,12 @@ package org.mule.module.socket.api.client;
 
 import org.mule.module.socket.internal.SocketDelegate;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.core.api.context.MuleContextAware;
 
 import java.io.IOException;
+import java.util.Optional;
 
-public interface ListenerSocket
+public interface ListenerSocket extends SocketClient, MuleContextAware
 {
-    SocketDelegate receive() throws ConnectionException, IOException;
+    Optional<SocketDelegate> receive() throws ConnectionException, IOException;
 }

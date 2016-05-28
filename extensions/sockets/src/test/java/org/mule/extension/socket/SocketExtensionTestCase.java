@@ -25,7 +25,6 @@ import org.mule.tck.probe.JUnitLambdaProbe;
 import org.mule.tck.probe.PollingProber;
 
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -41,33 +40,6 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
     protected static final String NAME = "Messi";
     protected static final int AGE = 10;
     protected TestPojo testPojo;
-
-    protected static class TestPojo implements Serializable
-    {
-
-        int age;
-        String name;
-
-        public int getAge()
-        {
-            return age;
-        }
-
-        public void setAge(int age)
-        {
-            this.age = age;
-        }
-
-        public String getName()
-        {
-            return name;
-        }
-
-        public void setName(String name)
-        {
-            this.name = name;
-        }
-    }
 
     protected void assertPojo(MuleMessage<?, ImmutableSocketAttributes> message, TestPojo expectedContent) throws Exception
     {
