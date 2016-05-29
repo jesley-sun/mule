@@ -66,6 +66,7 @@ public class UdpListenerProvider implements ConnectionProvider<AbstractSocketCon
     @Override
     public ConnectionHandlingStrategy<SocketClient> getHandlingStrategy(ConnectionHandlingStrategyFactory<AbstractSocketConfig, SocketClient> handlingStrategyFactory)
     {
-        return udpSocketProperties.getKeepSendSocketOpen() ? handlingStrategyFactory.cached() : handlingStrategyFactory.none();
+        //return udpSocketProperties.getKeepSendSocketOpen() ? handlingStrategyFactory.cached() : handlingStrategyFactory.none();
+        return handlingStrategyFactory.cached();
     }
 }

@@ -79,7 +79,7 @@ public class UdpListenerClient extends AbstractUdpClient implements ListenerSock
     @Override
     public void validate() throws ConnectionException, UnresolvableHostException
     {
-        if (!socket.isConnected())
+        if (socket.isClosed() || !socket.isBound())
         {
             throw new ConnectionException("UDP listener socket is not connected");
         }

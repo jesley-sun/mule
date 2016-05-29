@@ -64,6 +64,8 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
 
             try
             {
+                client.validate();
+
                 Optional<SocketDelegate> delegate = client.receive();
 
                 // An error receiving a connection, just wait for another one
