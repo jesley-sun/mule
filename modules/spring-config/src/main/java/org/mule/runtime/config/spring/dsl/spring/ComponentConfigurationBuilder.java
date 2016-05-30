@@ -42,14 +42,15 @@ import org.springframework.beans.factory.support.ManagedMap;
  */
 class ComponentConfigurationBuilder
 {
+
     private static final Logger logger = LoggerFactory.getLogger(ComponentConfigurationBuilder.class);
 
-    private final BeanDefinitionBuilderHelper beanDefinitionBuilderHelper;
+    private BeanDefinitionBuilderHelper beanDefinitionBuilderHelper;
     private final ObjectReferencePopulator objectReferencePopulator = new ObjectReferencePopulator();
-    private final List<ComponentValue> complexParameters;
-    private final Map<String, String> simpleParameters;
-    private final ComponentModel componentModel;
-    private final ComponentBuildingDefinition componentBuildingDefinition;
+    private List<ComponentValue> complexParameters;
+    private Map<String, String> simpleParameters;
+    private ComponentModel componentModel;
+    private ComponentBuildingDefinition componentBuildingDefinition;
 
     public ComponentConfigurationBuilder(ComponentModel componentModel,
                                          ComponentBuildingDefinition componentBuildingDefinition,
@@ -64,9 +65,8 @@ class ComponentConfigurationBuilder
 
     public void processConfiguration()
     {
-        componentBuildingDefinition.getIgnoredConfigurationParameters().stream().forEach( ignoredParameter -> {
-            simpleParameters.remove(ignoredParameter);
-        });
+        componentBuildingDefinition.getIgnoredConfigurationParameters().stream().forEach(simpleParameters::remove);
+
         for (Map.Entry<String, AttributeDefinition> definitionEntry : componentBuildingDefinition.getSetterParameterDefinitions().entrySet())
         {
             definitionEntry.getValue().accept(setterVisitor(definitionEntry.getKey()));
@@ -117,9 +117,8 @@ class ComponentConfigurationBuilder
             }
             Object bean = cdm.getBeanDefinition() != null ? cdm.getBeanDefinition() : cdm.getBeanReference();
             return new ComponentValue(cdm.getIdentifier(), beanDefinitionType, bean);
-        }).filter(beanDefinitionTypePair -> {
-            return beanDefinitionTypePair != null;
-        }).collect(toList());
+        }).filter(beanDefinitionTypePair -> beanDefinitionTypePair != null)
+                .collect(toList());
     }
 
     private ConfigurableAttributeDefinitionVisitor constructorVisitor()
@@ -144,7 +143,7 @@ class ComponentConfigurationBuilder
         private final Consumer<Object> valueConsumer;
 
         /**
-         * @param valueConsumer consumer for handling a bean definition
+         * @param valueConsumer     consumer for handling a bean definition
          * @param referenceConsumer consumer for handling a bean reference
          */
         ConfigurableAttributeDefinitionVisitor(Consumer<Object> valueConsumer, Consumer<String> referenceConsumer)
@@ -268,6 +267,7 @@ class ComponentConfigurationBuilder
      */
     private class ValueExtractorAttributeDefinitionVisitor implements AttributeDefinitionVisitor
     {
+
         private Object value;
 
         private String getStringValue()
@@ -283,9 +283,7 @@ class ComponentConfigurationBuilder
         @Override
         public void onReferenceObject(Class<?> objectType)
         {
-            objectReferencePopulator.populate(objectType, (referenceId) -> {
-                this.value = referenceId;
-            });
+            objectReferencePopulator.populate(objectType, referenceId -> this.value = referenceId);
         }
 
         @Override
@@ -343,9 +341,8 @@ class ComponentConfigurationBuilder
                     .filter(matchesTypeAndIdentifierPredicate)
                     .collect(toList());
 
-            matchingComponentValues.stream().forEach(beanDefinitionTypePair -> {
-                complexParameters.remove(beanDefinitionTypePair);
-            });
+            matchingComponentValues.stream().forEach(complexParameters::remove);
+
             if (wrapperIdentifier.isPresent() && !matchingComponentValues.isEmpty())
             {
                 this.value = matchingComponentValues.get(0).getBean();
@@ -374,12 +371,10 @@ class ComponentConfigurationBuilder
         private Predicate<ComponentValue> getTypeAndIdentifierPredicate(Class<?> type, Optional<String> identifierOptional)
         {
             return beanDefinitionTypePair -> {
-                        AtomicReference<Boolean> matchesIdentifier = new AtomicReference<>(true);
-                        identifierOptional.ifPresent(identifier -> {
-                            matchesIdentifier.set(identifier.equals(beanDefinitionTypePair.getIdentifier().getName()));
-                        });
-                        return areMatchingTypes(type, beanDefinitionTypePair.getType()) && matchesIdentifier.get();
-                    };
+                AtomicReference<Boolean> matchesIdentifier = new AtomicReference<>(true);
+                identifierOptional.ifPresent(identifier -> matchesIdentifier.set(identifier.equals(beanDefinitionTypePair.getIdentifier().getName())));
+                return areMatchingTypes(type, beanDefinitionTypePair.getType()) && matchesIdentifier.get();
+            };
         }
 
         @Override
@@ -406,6 +401,7 @@ class ComponentConfigurationBuilder
      */
     private class KeyExtractorAttributeDefinitionVisitor implements AttributeDefinitionVisitor
     {
+
         private Object key;
 
         public Object getKey()
@@ -453,9 +449,7 @@ class ComponentConfigurationBuilder
         public void onComplexChildList(Class<?> type, Optional<String> wrapperIdentifier)
         {
             this.key = type;
-            wrapperIdentifier.ifPresent( (identifier) -> {
-                this.key = identifier;
-            });
+            wrapperIdentifier.ifPresent(identifier -> this.key = identifier);
         }
 
         @Override
@@ -478,6 +472,7 @@ class ComponentConfigurationBuilder
                 definition.accept(this);
             }
         }
+
     }
 
     private ManagedList constructManagedList(List<Object> beans)
@@ -489,9 +484,7 @@ class ComponentConfigurationBuilder
 
     private List<Object> fromBeanDefinitionTypePairToBeanDefinition(List<ComponentValue> undefinedComplexParameters)
     {
-        return undefinedComplexParameters.stream().map(beanDefinitionTypePair -> {
-            return beanDefinitionTypePair.getBean();
-        }).collect(toList());
+        return undefinedComplexParameters.stream().map(ComponentValue::getBean).collect(toList());
     }
 
 }
