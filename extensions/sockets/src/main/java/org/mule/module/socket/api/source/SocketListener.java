@@ -13,6 +13,10 @@ import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
 import org.mule.module.socket.api.client.ListenerSocket;
 import org.mule.module.socket.internal.SocketDelegate;
 import org.mule.module.socket.internal.UdpSocketDelegate;
+import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.execution.CompletionHandler;
+import org.mule.runtime.api.execution.ExceptionCallback;
+import org.mule.runtime.api.message.MuleEvent;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.FlowConstructAware;
@@ -20,7 +24,6 @@ import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.runtime.source.Source;
 
 import java.io.InputStream;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,7 +51,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
     public void start() throws Exception
     {
         client.setMuleContext(muleContext);
-        executorService = newSingleThreadExecutor(r -> new Thread(r, format("%s%s.udp.listener", getPrefix(muleContext), flowConstruct.getName())));
+        executorService = newSingleThreadExecutor(r -> new Thread(r, format("%s%s.socket.listener", getPrefix(muleContext), flowConstruct.getName())));
         executorService.execute(this::listen);
     }
 
@@ -66,25 +69,38 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             {
                 client.validate();
 
-                Optional<SocketDelegate> delegate = client.receive();
-
-                // An error receiving a connection, just wait for another one
-                if (!delegate.isPresent())
-                {
-                    continue;
-                }
+                SocketDelegate delegate = client.receive();
 
                 if (isRequestedToStop())
                 {
-                    delegate.get().close();
+                    delegate.close();
                     return;
                 }
 
-                sourceContext.getMessageHandler().handle(delegate.get().getMuleMessage());
+                sourceContext.getMessageHandler().handle(delegate.getMuleMessage(), new CompletionHandler<MuleEvent, Exception, MuleEvent>()
+                {
+                    @Override
+                    public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback)
+                    {
+                    }
+
+                    @Override
+                    public void onFailure(Exception e)
+                    {
+                        delegate.close();
+                    }
+                });
+            }
+            catch (ConnectionException e)
+            {
+                sourceContext.getExceptionCallback().onException(e);
+                return;
             }
             catch (Exception e)
             {
-                sourceContext.getExceptionCallback().onException(e);
+                // keep listening
+                e.printStackTrace();
+                LOGGER.debug(e.getMessage());
             }
         }
     }
@@ -93,7 +109,11 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
     @Override
     public void stop()
     {
-        client.disconnect();
+        if (client != null)
+        {
+            client.disconnect();
+        }
+
         stopRequested.set(true);
         shutdownExecutor();
     }

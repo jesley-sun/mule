@@ -12,6 +12,7 @@ import org.mule.module.socket.internal.SocketUtils;
 import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -47,6 +48,12 @@ public class UdpRequesterClient extends AbstractUdpClient implements RequesterSo
         {
             throw new ConnectionException("An error occurred while trying to write into the UDP socket", e);
         }
+    }
+
+    @Override
+    public InputStream receive() throws IOException
+    {
+        return null;
     }
 
     @Override

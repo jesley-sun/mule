@@ -39,14 +39,8 @@ public class TcpSocketDelegate implements SocketDelegate
 
     private InputStream getInputStream(Socket socket)
     {
-        DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(new SocketInputStream(socket)));
-        return new StreamingSocketInputStream(underlyingIs);
-    }
-
-    public InputStream getSocketInputStream() throws IOException
-    {
-        return protocol.read(inputStream);
-
+        DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(new SocketInputStream(socket.getInputStream())));
+        return new TcpInputStream(underlyingIs);
     }
 
     public void close()
@@ -65,7 +59,7 @@ public class TcpSocketDelegate implements SocketDelegate
     {
         try
         {
-            return SocketUtils.createMuleMessage(getSocketInputStream(), attributes, muleContext);
+            return SocketUtils.createMuleMessage(protocol.getInputStreamWrapper(inputStream), attributes, muleContext);
         }
         catch (IOException e)
         {

@@ -66,7 +66,7 @@ public class UdpRequesterProvider implements ConnectionProvider<RequesterConfig,
     @Override
     public ConnectionHandlingStrategy<SocketClient> getHandlingStrategy(ConnectionHandlingStrategyFactory<RequesterConfig, SocketClient> handlingStrategyFactory)
     {
-           return udpSocketProperties.getKeepSendSocketOpen() ? handlingStrategyFactory.cached() : handlingStrategyFactory.none();
+        return udpSocketProperties.getKeepSendSocketOpen() ? handlingStrategyFactory.cached() : handlingStrategyFactory.none();
     }
 }
 

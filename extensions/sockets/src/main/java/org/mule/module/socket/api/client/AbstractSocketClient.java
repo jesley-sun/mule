@@ -7,12 +7,11 @@
 package org.mule.module.socket.api.client;
 
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.context.MuleContextAware;
 
 /**
  *
  */
-public abstract class AbstractSocketClient implements SocketClient, MuleContextAware
+public abstract class AbstractSocketClient implements SocketClient
 {
 
     protected String host;

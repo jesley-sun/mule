@@ -60,7 +60,7 @@ public class TcpRequesterProvider implements ConnectionProvider<RequesterConfig,
         }
         catch (UnresolvableHostException e)
         {
-            // todo check
+            //  todo check
         }
         return client;
     }

@@ -9,8 +9,9 @@ package org.mule.module.socket.api.client;
 
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.core.api.context.MuleContextAware;
 
-public interface SocketClient
+public interface SocketClient extends MuleContextAware
 {
     void validate() throws ConnectionException, UnresolvableHostException;
 

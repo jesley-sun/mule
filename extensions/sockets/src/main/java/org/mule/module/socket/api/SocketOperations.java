@@ -11,6 +11,9 @@ import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Basic set of operations for extensions which send content
  * across a generic socket
@@ -26,10 +29,12 @@ public class SocketOperations
      * @param data that will be serialized and sent through the socket.
      * @throws ConnectionException if the connection couldn't be established, if the remote host was unavailable.
      */
-    public void send(@Connection RequesterSocket client,
-                     @Optional(defaultValue = "#[payload]") Object data,
-                     @Optional(defaultValue = "UTF-8") String encoding) throws ConnectionException
+    public InputStream send(@Connection RequesterSocket client,
+                            @Optional(defaultValue = "#[payload]") Object data,
+                            @Optional(defaultValue = "UTF-8") String encoding) throws ConnectionException, IOException
     {
         client.send(data);
+        return client.receive();
+
     }
 }

@@ -5,8 +5,8 @@
  * LICENSE.txt file.
  */
 package org.mule.extension.socket;
-import org.mule.tck.junit4.rule.DynamicPort;
 
+import org.mule.tck.junit4.rule.DynamicPort;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,5 +33,19 @@ public class TcpSendTestCase extends SocketExtensionTestCase
     public void sendString() throws Exception
     {
         sendString("tcp-send");
+    }
+
+    @Test
+    public void multipleSendString() throws Exception
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            flowRunner("tcp-send").withPayload(TEST_STRING).run();
+        }
+
+        for (int i = 0; i < 5; i++)
+        {
+            assertEvent(receiveConnection(), TEST_STRING);
+        }
     }
 }

@@ -35,7 +35,6 @@ public abstract class AbstractSocketInputStream extends AutoCloseInputStream
         this.streamSupplier = streamSupplier;
     }
 
-
     @Override
     public final synchronized void close() throws IOException
     {

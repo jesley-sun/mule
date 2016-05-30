@@ -61,7 +61,7 @@ public class XmlMessageProtocol extends AbstractByteProtocol
         super(STREAM_OK);
     }
 
-    public InputStream read(InputStream is) throws IOException
+    public Object read(InputStream is) throws IOException
     {
         PushbackInputStream pbis = (PushbackInputStream) pbMap.get(is);
         if (null == pbis)
@@ -109,7 +109,7 @@ public class XmlMessageProtocol extends AbstractByteProtocol
                 message.setLength(patternIndex);
             }
 
-            return toInputStream(message.toString().getBytes());
+            return message.toString().getBytes();
 
         }
         finally

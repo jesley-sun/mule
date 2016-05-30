@@ -69,6 +69,6 @@ public class TcpListenerProvider implements ConnectionProvider<ListenerConfig, T
     @Override
     public ConnectionHandlingStrategy<TcpListenerClient> getHandlingStrategy(ConnectionHandlingStrategyFactory<ListenerConfig, TcpListenerClient> handlingStrategyFactory)
     {
-        return handlingStrategyFactory.cached();
+        return handlingStrategyFactory.none();
     }
 }

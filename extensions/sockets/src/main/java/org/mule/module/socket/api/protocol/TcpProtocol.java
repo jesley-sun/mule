@@ -21,7 +21,7 @@ public interface TcpProtocol
      * @return an array of byte containing a full message
      * @throws IOException if an exception occurs
      */
-    InputStream read(InputStream is) throws IOException;
+    Object read(InputStream is) throws IOException;
 
     /**
      * Write the specified message to the output stream.
@@ -31,6 +31,8 @@ public interface TcpProtocol
      * @throws IOException if an exception occurs
      */
     void write(OutputStream os, Object data) throws IOException;
+
+    InputStream getInputStreamWrapper(InputStream inputStream);
 
     boolean getRethrowExceptionOnRead();
 

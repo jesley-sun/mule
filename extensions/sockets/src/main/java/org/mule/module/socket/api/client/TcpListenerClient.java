@@ -10,8 +10,8 @@ import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.protocol.TcpProtocol;
 import org.mule.module.socket.api.tcp.TcpServerSocketProperties;
 import org.mule.module.socket.internal.SocketDelegate;
-import org.mule.module.socket.internal.TcpSocketDelegate;
 import org.mule.module.socket.internal.SocketUtils;
+import org.mule.module.socket.internal.TcpSocketDelegate;
 import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
@@ -19,7 +19,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +44,14 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
         {
             this.socket = new ServerSocket();
 
-            socket.setSoTimeout(socketProperties.getTimeout());
+            // todo socket timeout must be always 0
+            //socket.setSoTimeout(socketProperties.getTimeout());
             socket.setReceiveBufferSize(socketProperties.getReceiveBufferSize());
             socket.setReuseAddress(socketProperties.getReuseAddress());
         }
         catch (Exception e)
         {
-            throw new ConnectionException("Could not create TCP listener socket");
+            throw new ConnectionException("Could not create TCP listener socket", e);
         }
 
         InetSocketAddress address = SocketUtils.getSocketAddress(host, port, socketProperties.getFailOnUnresolvedHost());
@@ -62,31 +62,33 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
         }
         catch (IOException e)
         {
-            throw new ConnectionException(String.format("Could not bind socket to host '%s' and port '%d'", host, port));
+            throw new ConnectionException(String.format("Could not bind socket to host '%s' and port '%d'", host, port), e);
         }
     }
 
-    // todo this shouldnt be optional
-    private Optional<Socket> listen() throws IOException, ConnectionException
+    private Socket acceptConnection() throws ConnectionException, IOException
     {
         try
         {
-            Socket newConnection = socket.accept();
-            configureIncomingConnection(newConnection);
-            return Optional.ofNullable(newConnection);
+            return socket.accept();
         }
-        catch (Exception e)
+        catch (IOException e)
         {
+            LOGGER.debug(e.getMessage());
             if (socket.isClosed())
             {
                 LOGGER.debug("TCP listener socket has been closed");
-                return Optional.empty();
-            }
-            else
-            {
                 throw new ConnectionException("An error occurred while listening for new TCP connections", e);
             }
+            throw e;
         }
+    }
+
+    private Socket listen() throws IOException, ConnectionException
+    {
+        Socket newConnection = acceptConnection();
+        configureIncomingConnection(newConnection);
+        return newConnection;
     }
 
     private void configureIncomingConnection(Socket newConnection) throws IOException
@@ -111,23 +113,16 @@ public class TcpListenerClient extends AbstractTcpClient implements ListenerSock
         }
         catch (SocketException e)
         {
-            throw new IOException("Could not configure incoming TCP connection");
+            throw new IOException("Could not configure incoming TCP connection", e);
         }
     }
 
     @Override
-    public Optional<SocketDelegate> receive() throws ConnectionException, IOException
+    public SocketDelegate receive() throws ConnectionException, IOException
     {
 
-        Optional<Socket> incomingConnection = listen();
-
-        if (!incomingConnection.isPresent())
-        {
-            return Optional.empty();
-        }
-
-        Socket socket = incomingConnection.get();
-        return Optional.of(new TcpSocketDelegate(socket, protocol, muleContext));
+        Socket incomingConnection = listen();
+        return new TcpSocketDelegate(incomingConnection, protocol, muleContext);
     }
 
     public synchronized void disconnect()

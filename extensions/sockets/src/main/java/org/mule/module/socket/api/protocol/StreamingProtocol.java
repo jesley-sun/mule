@@ -6,7 +6,7 @@
  */
 package org.mule.module.socket.api.protocol;
 
-import org.mule.module.socket.internal.StreamingSocketInputStream;
+import org.mule.module.socket.internal.TcpInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,14 +19,19 @@ public class StreamingProtocol extends EOFProtocol
         super();
     }
 
-    public InputStream read(InputStream is) throws IOException
+    public Object read(InputStream is) throws IOException
     {
-        if (is instanceof StreamingSocketInputStream)
+        if (is instanceof TcpInputStream)
         {
-            ((StreamingSocketInputStream) is).setStreaming(true);
+            ((TcpInputStream) is).setStreaming(true);
         }
 
         return is;
+    }
+
+    @Override
+    public InputStream getInputStreamWrapper(InputStream inputStream){
+        return inputStream;
     }
 }
 

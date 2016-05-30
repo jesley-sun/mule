@@ -6,7 +6,7 @@
  */
 package org.mule.module.socket.api.client;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static org.mule.module.socket.internal.SocketUtils.getSocketAddress;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.protocol.TcpProtocol;
@@ -15,6 +15,7 @@ import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -85,8 +86,9 @@ public class TcpRequesterClient extends AbstractSocketClient implements Requeste
 
     public void send(Object data) throws ConnectionException
     {
-        try (BufferedOutputStream socketStream = new BufferedOutputStream(socket.getOutputStream()))
+        try
         {
+            BufferedOutputStream socketStream = new BufferedOutputStream(socket.getOutputStream());
             protocol.write(socketStream, data);
             socketStream.flush();
         }
@@ -94,6 +96,25 @@ public class TcpRequesterClient extends AbstractSocketClient implements Requeste
         {
             throw new ConnectionException("An error occurred while trying to write into the socket", e);
         }
+    }
+
+    public InputStream receive() throws IOException
+    {
+        //DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        //TcpInputStream inputStream = new TcpInputStream(underlyingIs);
+        //
+        //try
+        //{
+        //    return protocol.read(inputStream);
+        //}
+        //finally
+        //{
+        //    if (!inputStream.isStreaming())
+        //    {
+        //        inputStream.close();
+        //    }
+        //}
+        return null;
     }
 
     public void disconnect()
@@ -104,14 +125,14 @@ public class TcpRequesterClient extends AbstractSocketClient implements Requeste
         }
         catch (IOException e)
         {
-            LOGGER.error("An error occurred when closing TCP requester socket");
+            LOGGER.error("An error occurred when  closing TCP requester socket");
         }
     }
 
     @Override
     public void validate() throws ConnectionException, UnresolvableHostException
     {
-        if (!socket.isConnected())
+        if (!socket.isConnected() || socket.isClosed())
         {
             throw new ConnectionException("Requester TCP socket is not connected");
         }

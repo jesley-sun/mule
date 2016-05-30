@@ -60,12 +60,12 @@ public class DirectProtocol extends AbstractByteProtocol
     }
 
     @Override
-    public InputStream read(InputStream is) throws IOException
+    public Object read(InputStream is) throws IOException
     {
         return read(is, UNLIMITED);
     }
 
-    public InputStream read(InputStream is, int limit) throws IOException
+    public byte[] read(InputStream is, int limit) throws IOException
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(bufferSize);
 
@@ -90,7 +90,7 @@ public class DirectProtocol extends AbstractByteProtocol
             byteArrayOutputStream.flush();
             byteArrayOutputStream.close();
         }
-        return toInputStream(byteArrayOutputStream.toByteArray());
+        return byteArrayOutputStream.toByteArray();
     }
 
     protected int remaining(int limit, int remain, int len)

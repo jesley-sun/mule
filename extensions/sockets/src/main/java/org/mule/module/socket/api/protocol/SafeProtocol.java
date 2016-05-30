@@ -51,11 +51,11 @@ public class SafeProtocol extends AbstractByteProtocol implements Startable
         delegate = protocol;
     }
 
-    public InputStream read(InputStream is) throws IOException
+    public Object read(InputStream is) throws IOException
     {
         if (assertSiblingSafe(is))
         {
-            InputStream result = delegate.read(is);
+            Object result = delegate.read(is);
             if (null == result)
             {
                 // EOF after cookie but before data

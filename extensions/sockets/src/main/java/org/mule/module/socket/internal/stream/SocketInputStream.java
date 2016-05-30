@@ -8,17 +8,17 @@ package org.mule.module.socket.internal.stream;
 
 import org.mule.runtime.core.api.MuleRuntimeException;
 
-import java.net.Socket;
+import java.io.InputStream;
 
 public final class SocketInputStream extends AbstractSocketInputStream
 {
 
-    public SocketInputStream(Socket socket)
+    public SocketInputStream(final InputStream inputStream)
     {
         super(new LazyStreamSupplier(() -> {
             try
             {
-                return socket.getInputStream();
+                return inputStream;
             }
             catch (Exception e)
             {

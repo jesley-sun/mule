@@ -37,6 +37,8 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
     protected static final int POLL_DELAY_MILLIS = 100;
     public static final String TEST_STRING = "This is a test string";
     protected static List<MuleMessage<?, ImmutableSocketAttributes>> receivedMessages;
+
+
     protected static final String NAME = "Messi";
     protected static final int AGE = 10;
     protected TestPojo testPojo;
@@ -58,7 +60,6 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
     {
         super.doSetUpBeforeMuleContextCreation();
         receivedMessages = new CopyOnWriteArrayList<>();
-
         testPojo = new TestPojo();
         testPojo.setAge(AGE);
         testPojo.setName(NAME);
@@ -106,6 +107,23 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
             for (MuleMessage<?, ImmutableSocketAttributes> message : receivedMessages)
             {
                 messageHolder.set(message);
+                return true;
+            }
+
+            return false;
+        }));
+
+        return messageHolder.get();
+    }
+
+    protected MuleMessage<?, ImmutableSocketAttributes> popConnection() throws InterruptedException
+    {
+        PollingProber prober = new PollingProber(TIMEOUT_MILLIS, POLL_DELAY_MILLIS);
+        ValueHolder<MuleMessage<?, ImmutableSocketAttributes>> messageHolder = new ValueHolder<>();
+        prober.check(new JUnitLambdaProbe(() -> {
+            if (receivedMessages.size() > 0)
+            {
+                messageHolder.set(receivedMessages.remove(0));
                 return true;
             }
 

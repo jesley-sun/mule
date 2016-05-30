@@ -7,6 +7,7 @@
 
     <sockets:requester-config name="tcp-requester">
         <sockets:tcp-requester-connection host="localhost" port="${port_tcp}">
+            <pooling-profile maxActive="1"/>
             <sockets:protocol>
                 <sockets:length-protocol/>
             </sockets:protocol>
@@ -35,7 +36,6 @@
 
     <flow name="tcp-listen">
         <sockets:socket-listener config-ref="tcp-listener"/>
-        <!--<sockets:tcp-listener config-ref="tcp-listener"/>-->
         <flow-ref name="onIncomingConnection"/>
     </flow>
 

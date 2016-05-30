@@ -8,21 +8,18 @@ package org.mule.module.socket.internal;
 
 import java.io.InputStream;
 
-import org.apache.commons.io.input.AutoCloseInputStream;
-
-public class StreamingSocketInputStream extends AutoCloseInputStream
+public class TcpInputStream extends DelegatingInputStream
 {
-
-    private boolean streaming;
-
-    /**
-     * Creates an automatically closing proxy for the given input stream.
-     *
-     * @param in underlying input stream
-     */
-    public StreamingSocketInputStream(InputStream in)
+    private boolean streaming = false;
+    
+    public TcpInputStream(InputStream delegate)
     {
-        super(in);
+        super(delegate);
+    }
+
+    public boolean isStreaming()
+    {
+        return streaming;
     }
 
     public void setStreaming(boolean streaming)
@@ -30,8 +27,6 @@ public class StreamingSocketInputStream extends AutoCloseInputStream
         this.streaming = streaming;
     }
 
-    public boolean isStreaming()
-    {
-        return streaming;
-    }
 }
+
+

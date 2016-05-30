@@ -7,6 +7,7 @@
 
 package org.mule.module.socket.api.protocol;
 
+import org.mule.module.socket.internal.stream.ByteArrayProtocolWrapper;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.core.util.NumberUtils;
 import org.mule.runtime.extension.api.annotation.Parameter;
@@ -142,5 +143,11 @@ public abstract class AbstractByteProtocol implements TcpProtocol
     public void setObjectSerializer(ObjectSerializer objectSerializer)
     {
         this.objectSerializer = objectSerializer;
+    }
+
+    @Override
+    public InputStream getInputStreamWrapper(InputStream inputStream)
+    {
+        return new ByteArrayProtocolWrapper(this, inputStream);
     }
 }

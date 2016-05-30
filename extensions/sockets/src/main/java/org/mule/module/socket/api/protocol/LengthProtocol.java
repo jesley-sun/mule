@@ -50,7 +50,7 @@ public class LengthProtocol extends DirectProtocol
         this.maxMessageLength = maxMessageLength;
     }
 
-    public InputStream read(InputStream is) throws IOException
+    public Object read(InputStream is) throws IOException
     {
         // original comments indicated that we need to use read(byte[]) rather than readInt()
         // to avoid socket timeouts - don't understand, but don't want to risk change.
@@ -77,7 +77,7 @@ public class LengthProtocol extends DirectProtocol
         byte[] buffer = new byte[length];
         dis.readFully(buffer);
 
-        return toInputStream(buffer);
+        return buffer;
     }
 
     @Override
