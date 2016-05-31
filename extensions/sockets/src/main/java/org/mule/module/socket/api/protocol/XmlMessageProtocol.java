@@ -61,7 +61,12 @@ public class XmlMessageProtocol extends AbstractByteProtocol
         super(STREAM_OK);
     }
 
-    public Object read(InputStream is) throws IOException
+    public InputStream read(InputStream socketIs)
+    {
+        return new ByteArrayProtocolWrapper(socketIs, this::consume);
+    }
+
+    private byte[] consume(InputStream is) throws IOException
     {
         PushbackInputStream pbis = (PushbackInputStream) pbMap.get(is);
         if (null == pbis)

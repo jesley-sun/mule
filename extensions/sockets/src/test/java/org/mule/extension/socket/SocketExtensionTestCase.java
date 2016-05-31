@@ -91,7 +91,7 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
     protected void assertEvent(MuleMessage<?, ImmutableSocketAttributes> message, Object expectedContent) throws Exception
     {
         String payload = IOUtils.toString((InputStream) message.getPayload());
-        assertEquals(payload, expectedContent);
+        assertEquals(expectedContent, payload);
     }
 
     protected Object deserializeMessage(MuleMessage<?, ImmutableSocketAttributes> message) throws Exception
@@ -107,23 +107,6 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
             for (MuleMessage<?, ImmutableSocketAttributes> message : receivedMessages)
             {
                 messageHolder.set(message);
-                return true;
-            }
-
-            return false;
-        }));
-
-        return messageHolder.get();
-    }
-
-    protected MuleMessage<?, ImmutableSocketAttributes> popConnection() throws InterruptedException
-    {
-        PollingProber prober = new PollingProber(TIMEOUT_MILLIS, POLL_DELAY_MILLIS);
-        ValueHolder<MuleMessage<?, ImmutableSocketAttributes>> messageHolder = new ValueHolder<>();
-        prober.check(new JUnitLambdaProbe(() -> {
-            if (receivedMessages.size() > 0)
-            {
-                messageHolder.set(receivedMessages.remove(0));
                 return true;
             }
 

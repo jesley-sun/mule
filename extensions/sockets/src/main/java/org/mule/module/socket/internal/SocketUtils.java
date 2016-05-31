@@ -7,7 +7,7 @@
 package org.mule.module.socket.internal;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import org.mule.module.socket.api.client.SocketClient;
+import org.mule.module.socket.api.connection.AbstractSocketConnection;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class SocketUtils
@@ -85,11 +86,11 @@ public class SocketUtils
         throw new IllegalArgumentException(String.format("Cannot serialize data: '%s'", data));
     }
 
-    public static ConnectionValidationResult validate(SocketClient client)
+    public static ConnectionValidationResult validate(AbstractSocketConnection connection)
     {
         try
         {
-            client.validate();
+            connection.validate();
             return ConnectionValidationResult.success();
         }
         catch (UnresolvableHostException e)
@@ -102,7 +103,12 @@ public class SocketUtils
         }
     }
 
-    public static void closeSocket(DatagramSocket socket)
+    public static void closeSocket(DatagramSocket socket) throws IOException
+    {
+        socket.close();
+    }
+
+    public static void closeSocket(Socket socket) throws IOException
     {
         socket.close();
     }

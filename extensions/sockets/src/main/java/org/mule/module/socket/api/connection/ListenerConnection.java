@@ -4,23 +4,14 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+package org.mule.module.socket.api.connection;
 
-package org.mule.module.socket.api.client;
-
-import org.mule.module.socket.api.source.SocketAttributes;
+import org.mule.module.socket.api.client.SocketClient;
 import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-public interface SocketClient
+public interface ListenerConnection extends SocketConnection
 {
-
-    void send(Object data) throws ConnectionException;
-
-    InputStream receive() throws IOException;
-
-    void close() throws IOException;
-
-    SocketAttributes getAttributes();
+    SocketClient listen() throws IOException, ConnectionException;
 }

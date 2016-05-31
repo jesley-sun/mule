@@ -6,13 +6,15 @@
  */
 package org.mule.module.socket.api.tcp;
 
+import org.mule.module.socket.api.RequestingSocketProperties;
+
 /**
  * Interface for objects that provide TCP configuration for client sockets.
  * {@code null} values can be returned by any of the methods, meaning that there is no value defined for the property.
  *
  * @since 4.0
  */
-public interface TcpClientSocketProperties extends TcpSocketProperties
+public interface TcpClientSocketProperties extends TcpSocketProperties, RequestingSocketProperties
 {
 
     /**
@@ -20,17 +22,4 @@ public interface TcpClientSocketProperties extends TcpSocketProperties
      * Defaults to 30 seconds.
      */
     int getConnectionTimeout();
-
-    /**
-     * Specifies a certain port to be used by the socket for receiving purposes. If it was not set, the system will
-     * pick up an ephemeral port to bind the socket with.
-     */
-    Integer getLocalPort();
-
-
-    /**
-     * Specifies a certain host to be used by the socket for receiving purposes. If it was not set, the system will
-     * pick up a host name to bind the socket with.
-     */
-    String getBindingHost();
 }

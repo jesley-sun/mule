@@ -6,8 +6,8 @@
  */
 package org.mule.module.socket.api.config;
 
-import org.mule.module.socket.api.provider.TcpListenerProvider;
-import org.mule.module.socket.api.provider.UdpListenerProvider;
+import org.mule.module.socket.api.provider.tcp.TcpListenerProvider;
+import org.mule.module.socket.api.provider.udp.UdpListenerProvider;
 import org.mule.module.socket.api.source.SocketListener;
 import org.mule.runtime.extension.api.annotation.Configuration;
 import org.mule.runtime.extension.api.annotation.Sources;
@@ -15,7 +15,6 @@ import org.mule.runtime.extension.api.annotation.connector.Providers;
 
 @Configuration(name = "listener-config")
 @Providers({TcpListenerProvider.class, UdpListenerProvider.class})
-//@Sources({TcpListener.class, UdpListener.class})
 @Sources({SocketListener.class})
 public class ListenerConfig extends AbstractSocketConfig
 {

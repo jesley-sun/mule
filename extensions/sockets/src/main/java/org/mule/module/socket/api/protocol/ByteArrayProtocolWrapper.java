@@ -4,9 +4,8 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.module.socket.internal.stream;
+package org.mule.module.socket.api.protocol;
 
-import org.mule.module.socket.api.protocol.TcpProtocol;
 import org.mule.module.socket.internal.DelegatingInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -16,23 +15,23 @@ import java.io.InputStream;
 public class ByteArrayProtocolWrapper extends DelegatingInputStream
 {
 
-    private final TcpProtocol protocol;
-    private final InputStream inputStream;
-    private DelegatingInputStream delegate;
+    private final SocketInputStreamConsumer consumer;
+    private final InputStream socketIs;
+    private InputStream delegate;
 
-    public ByteArrayProtocolWrapper(TcpProtocol protocol, InputStream inputStream)
+    public ByteArrayProtocolWrapper(InputStream socketIs, SocketInputStreamConsumer consumer)
     {
-        this.protocol = protocol;
-        this.inputStream = inputStream;
+        this.consumer = consumer;
+        this.socketIs = socketIs;
     }
 
     @Override
-    protected InputStream getDelegate()
+    protected InputStream getDelegate() throws IOException
     {
         //todo sync
         if (delegate == null)
         {
-            delegate = new ByteArrayInputStream((byte[]) protocol.read(inputStream));
+            delegate = new ByteArrayInputStream(consumer.consume(socketIs));
         }
 
         return delegate;

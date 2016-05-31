@@ -33,17 +33,19 @@
         <sockets:send config-ref="tcp-requester"/>
     </flow>
 
-
-    <flow name="tcp-listen">
-        <sockets:socket-listener config-ref="tcp-listener"/>
-        <flow-ref name="onIncomingConnection"/>
-        <set-payload value="Consumed"/>
+    <flow name="tcp-send-and-receive">
+        <sockets:send config-ref="tcp-requester"/>
         <logger message="#[payload]"/>
     </flow>
 
-    <sub-flow name="onIncomingConnection">
-        <expression-component>org.mule.extension.socket.SocketExtensionTestCase.onIncomingConnection(message)
-        </expression-component>
-    </sub-flow>
+
+    <flow name="tcp-listen-and-modify">
+        <sockets:socket-listener config-ref="tcp-listener"/>
+        <object-to-string-transformer mimeType="text/plain"/>
+        <logger message="#[payload]"/>
+        <set-payload value="#[payload]_modified"/>
+        <logger message="#[payload]"/>
+    </flow>
+
 
 </mule>

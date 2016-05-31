@@ -4,9 +4,15 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.module.socket.api.udp;
+package org.mule.module.socket.api.connection;
 
-public interface UdpClientSocketProperties extends UdpSocketProperties
+import org.mule.runtime.api.connection.ConnectionException;
+
+public interface SocketConnection
 {
+    void disconnect();
 
+    void connect() throws ConnectionException;
+
+    void validate() throws ConnectionException;
 }

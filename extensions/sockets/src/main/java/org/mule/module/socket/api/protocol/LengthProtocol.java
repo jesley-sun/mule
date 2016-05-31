@@ -50,7 +50,12 @@ public class LengthProtocol extends DirectProtocol
         this.maxMessageLength = maxMessageLength;
     }
 
-    public Object read(InputStream is) throws IOException
+    public InputStream read(InputStream socketIs) throws IOException
+    {
+        return new ByteArrayProtocolWrapper(socketIs, this::consume);
+    }
+
+    private byte[] consume(InputStream is) throws IOException
     {
         // original comments indicated that we need to use read(byte[]) rather than readInt()
         // to avoid socket timeouts - don't understand, but don't want to risk change.

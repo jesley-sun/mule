@@ -12,7 +12,7 @@ import java.io.InputStream;
 public abstract class DelegatingInputStream extends InputStream
 {
 
-    protected abstract InputStream getDelegate();
+    protected abstract InputStream getDelegate() throws IOException;
 
     public int available() throws IOException
     {
@@ -21,12 +21,26 @@ public abstract class DelegatingInputStream extends InputStream
 
     public synchronized void mark(int readlimit)
     {
-        getDelegate().mark(readlimit);
+        try
+        {
+            getDelegate().mark(readlimit);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public boolean markSupported()
     {
-        return getDelegate().markSupported();
+        try
+        {
+            return getDelegate().markSupported();
+        }
+        catch (IOException e)
+        {
+            return false;
+        }
     }
 
     public synchronized void reset() throws IOException

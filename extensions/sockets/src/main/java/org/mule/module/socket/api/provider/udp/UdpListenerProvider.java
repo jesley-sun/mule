@@ -4,10 +4,8 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.module.socket.api.provider;
+package org.mule.module.socket.api.provider.udp;
 
-import org.mule.module.socket.api.client.SocketClient;
-import org.mule.module.socket.api.client.UdpListenerClient;
 import org.mule.module.socket.api.config.AbstractSocketConfig;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
@@ -25,11 +23,12 @@ import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.module.socket.api.connection.udp.UdpListenerConnection;
 
 import javax.inject.Inject;
 
 @Alias("udp-listener")
-public class UdpListenerProvider implements ConnectionProvider<AbstractSocketConfig, SocketClient>
+public class UdpListenerProvider implements ConnectionProvider<AbstractSocketConfig, UdpListenerConnection>
 {
 
     @ParameterGroup
@@ -44,27 +43,27 @@ public class UdpListenerProvider implements ConnectionProvider<AbstractSocketCon
     ObjectSerializer objectSerializer;
 
     @Override
-    public SocketClient connect(AbstractSocketConfig udpConfig) throws ConnectionException, UnresolvableHostException
+    public UdpListenerConnection connect(AbstractSocketConfig udpConfig) throws ConnectionException, UnresolvableHostException
     {
-        UdpListenerClient client = new UdpListenerClient(udpSocketProperties, settings.getHost(), settings.getPort());
-        client.setObjectSerializer(objectSerializer);
-        return client;
+        UdpListenerConnection connection = new UdpListenerConnection(udpSocketProperties, settings.getHost(), settings.getPort());
+        connection.connect();
+        return connection;
     }
 
     @Override
-    public void disconnect(SocketClient client)
+    public void disconnect(UdpListenerConnection connection)
     {
-        client.disconnect();
+        connection.disconnect();
     }
 
     @Override
-    public ConnectionValidationResult validate(SocketClient udpClient)
+    public ConnectionValidationResult validate(UdpListenerConnection connection)
     {
-        return SocketUtils.validate(udpClient);
+        return SocketUtils.validate(connection);
     }
 
     @Override
-    public ConnectionHandlingStrategy<SocketClient> getHandlingStrategy(ConnectionHandlingStrategyFactory<AbstractSocketConfig, SocketClient> handlingStrategyFactory)
+    public ConnectionHandlingStrategy<UdpListenerConnection> getHandlingStrategy(ConnectionHandlingStrategyFactory<AbstractSocketConfig, UdpListenerConnection> handlingStrategyFactory)
     {
         return handlingStrategyFactory.cached();
     }

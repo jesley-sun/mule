@@ -60,12 +60,12 @@ public class DirectProtocol extends AbstractByteProtocol
     }
 
     @Override
-    public Object read(InputStream is) throws IOException
+    public InputStream read(InputStream socketIs) throws IOException
     {
-        return read(is, UNLIMITED);
+        return new ByteArrayProtocolWrapper(socketIs, is -> this.read(is, UNLIMITED));
     }
 
-    public byte[] read(InputStream is, int limit) throws IOException
+    protected byte[] read(InputStream is, int limit) throws IOException
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(bufferSize);
 

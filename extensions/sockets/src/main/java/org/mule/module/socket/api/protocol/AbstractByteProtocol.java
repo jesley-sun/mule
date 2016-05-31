@@ -7,13 +7,11 @@
 
 package org.mule.module.socket.api.protocol;
 
-import org.mule.module.socket.internal.stream.ByteArrayProtocolWrapper;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.core.util.NumberUtils;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,11 +45,6 @@ public abstract class AbstractByteProtocol implements TcpProtocol
     @Parameter
     @Optional(defaultValue = "false")
     protected boolean rethrowExceptionOnRead = false;
-
-    public boolean getRethrowExceptionOnRead()
-    {
-        return rethrowExceptionOnRead;
-    }
 
     public AbstractByteProtocol(boolean streamOk)
     {
@@ -135,19 +128,13 @@ public abstract class AbstractByteProtocol implements TcpProtocol
         return len;
     }
 
-    protected InputStream toInputStream(byte[] data)
-    {
-        return new ByteArrayInputStream(data);
-    }
-
     public void setObjectSerializer(ObjectSerializer objectSerializer)
     {
         this.objectSerializer = objectSerializer;
     }
 
-    @Override
-    public InputStream getInputStreamWrapper(InputStream inputStream)
+    public boolean getRethrowExceptionOnRead()
     {
-        return new ByteArrayProtocolWrapper(this, inputStream);
+        return rethrowExceptionOnRead;
     }
 }

@@ -4,9 +4,12 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.module.socket.api.udp;
+package org.mule.module.socket.api.protocol;
 
-public interface UdpServerSocketProperties extends UdpSocketProperties
+import java.io.IOException;
+import java.io.InputStream;
+
+interface SocketInputStreamConsumer
 {
-
+    byte[] consume(InputStream is) throws IOException;
 }

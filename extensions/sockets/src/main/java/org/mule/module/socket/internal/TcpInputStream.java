@@ -6,15 +6,17 @@
  */
 package org.mule.module.socket.internal;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class TcpInputStream extends DelegatingInputStream
 {
+    private InputStream delegate;
     private boolean streaming = false;
     
-    public TcpInputStream(InputStream delegate)
+    public TcpInputStream(InputStream inputStream)
     {
-        super(delegate);
+        delegate = inputStream;
     }
 
     public boolean isStreaming()
@@ -27,6 +29,11 @@ public class TcpInputStream extends DelegatingInputStream
         this.streaming = streaming;
     }
 
+    @Override
+    protected InputStream getDelegate() throws IOException
+    {
+        return delegate;
+    }
 }
 
 

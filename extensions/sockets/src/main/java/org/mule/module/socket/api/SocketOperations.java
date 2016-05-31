@@ -6,8 +6,11 @@
  */
 package org.mule.module.socket.api;
 
-import org.mule.module.socket.api.client.RequesterSocket;
+import org.mule.module.socket.api.client.SocketClient;
+import org.mule.module.socket.api.connection.RequesterConnection;
+import org.mule.module.socket.internal.metadata.SocketMetadataResolver;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
@@ -29,10 +32,12 @@ public class SocketOperations
      * @param data that will be serialized and sent through the socket.
      * @throws ConnectionException if the connection couldn't be established, if the remote host was unavailable.
      */
-    public InputStream send(@Connection RequesterSocket client,
+    @MetadataScope(outputResolver = SocketMetadataResolver.class)
+    public InputStream send(@Connection RequesterConnection connection,
                             @Optional(defaultValue = "#[payload]") Object data,
                             @Optional(defaultValue = "UTF-8") String encoding) throws ConnectionException, IOException
     {
+        SocketClient client = connection.getClient();
         client.send(data);
         return client.receive();
 

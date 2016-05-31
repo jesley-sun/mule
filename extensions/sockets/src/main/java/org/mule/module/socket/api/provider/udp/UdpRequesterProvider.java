@@ -4,15 +4,13 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.module.socket.api.provider;
+package org.mule.module.socket.api.provider.udp;
 
-import org.mule.module.socket.api.client.SocketClient;
-import org.mule.module.socket.api.client.UdpRequesterClient;
 import org.mule.module.socket.api.config.RequesterConfig;
+import org.mule.module.socket.api.connection.udp.UdpRequesterConnection;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
-import org.mule.module.socket.api.udp.UdpSocketProperties;
 import org.mule.module.socket.internal.ConnectionSettings;
-import org.mule.module.socket.internal.DefaultUdpSocketProperties;
+import org.mule.module.socket.internal.DefaultUdpRequestingSocketProperties;
 import org.mule.module.socket.internal.SocketUtils;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionHandlingStrategy;
@@ -29,7 +27,7 @@ import org.mule.runtime.extension.api.annotation.param.Optional;
 import javax.inject.Inject;
 
 @Alias("udp-requester")
-public class UdpRequesterProvider implements ConnectionProvider<RequesterConfig, SocketClient>
+public class UdpRequesterProvider implements ConnectionProvider<RequesterConfig, UdpRequesterConnection>
 {
 
     @ParameterGroup
@@ -37,36 +35,36 @@ public class UdpRequesterProvider implements ConnectionProvider<RequesterConfig,
 
     @Parameter
     @Optional
-    UdpSocketProperties udpSocketProperties = new DefaultUdpSocketProperties();
+    DefaultUdpRequestingSocketProperties udpRequestingSocketProperties = new DefaultUdpRequestingSocketProperties();
 
     @DefaultObjectSerializer
     @Inject
     ObjectSerializer objectSerializer;
 
     @Override
-    public SocketClient connect(RequesterConfig udpConfig) throws ConnectionException, UnresolvableHostException
+    public UdpRequesterConnection connect(RequesterConfig udpConfig) throws ConnectionException, UnresolvableHostException
     {
-        UdpRequesterClient client = new UdpRequesterClient(udpSocketProperties, settings.getHost(), settings.getPort());
-        client.setObjectSerializer(objectSerializer);
-        return client;
+        UdpRequesterConnection connection = new UdpRequesterConnection(udpRequestingSocketProperties, settings.getHost(), settings.getPort());
+        connection.connect();
+        return connection;
     }
 
     @Override
-    public void disconnect(SocketClient client)
+    public void disconnect(UdpRequesterConnection connection)
     {
-        client.disconnect();
+        connection.disconnect();
     }
 
     @Override
-    public ConnectionValidationResult validate(SocketClient udpClient)
+    public ConnectionValidationResult validate(UdpRequesterConnection connection)
     {
-        return SocketUtils.validate(udpClient);
+        return SocketUtils.validate(connection);
     }
 
     @Override
-    public ConnectionHandlingStrategy<SocketClient> getHandlingStrategy(ConnectionHandlingStrategyFactory<RequesterConfig, SocketClient> handlingStrategyFactory)
+    public ConnectionHandlingStrategy<UdpRequesterConnection> getHandlingStrategy(ConnectionHandlingStrategyFactory<RequesterConfig, UdpRequesterConnection> handlingStrategyFactory)
     {
-        return udpSocketProperties.getKeepSendSocketOpen() ? handlingStrategyFactory.cached() : handlingStrategyFactory.none();
+        return udpRequestingSocketProperties.getKeepSendSocketOpen() ? handlingStrategyFactory.cached() : handlingStrategyFactory.none();
     }
 }
 

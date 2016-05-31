@@ -24,21 +24,20 @@ public class TcpSocketDelegate implements SocketDelegate
 
     private final TcpProtocol protocol;
     private final MuleContext muleContext;
-    private final InputStream inputStream;
     private final SocketAttributes attributes;
     private final Socket socket;
-
+//public TcpRequesterClient(TcpClientSocketProperties socketProperties, TcpProtocol protocol, String host, Integer port) throws ConnectionException
     public TcpSocketDelegate(Socket socket, TcpProtocol protocol, MuleContext muleContext)
     {
         this.socket = socket;
         this.protocol = protocol;
         this.muleContext = muleContext;
         attributes = new ImmutableSocketAttributes(socket);
-        inputStream = getInputStream(socket);
     }
 
-    private InputStream getInputStream(Socket socket)
+    private InputStream getInputStream(Socket socket) throws IOException
     {
+        //FIXME same code as tcp requester
         DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(new SocketInputStream(socket.getInputStream())));
         return new TcpInputStream(underlyingIs);
     }
@@ -57,18 +56,6 @@ public class TcpSocketDelegate implements SocketDelegate
 
     public MuleMessage<InputStream, SocketAttributes> getMuleMessage() throws IOException
     {
-        try
-        {
-            return SocketUtils.createMuleMessage(protocol.getInputStreamWrapper(inputStream), attributes, muleContext);
-        }
-        catch (IOException e)
-        {
-            if (protocol.getRethrowExceptionOnRead())
-            {
-                throw e;
-            }
-
-            return SocketUtils.createMuleMessageWithNullPayload(attributes, muleContext);
-        }
+        return SocketUtils.createMuleMessage(protocol.read(getInputStream(socket)), attributes, muleContext);
     }
 }
