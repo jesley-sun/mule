@@ -34,6 +34,11 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Listens for socket connections of the given protocol in the configured host and port
+ *
+ * @since 4.0
+ */
 public class SocketListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware
 {
 
@@ -125,7 +130,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             }
             catch (ConnectionException e)
             {
-                if(!isRequestedToStop())
+                if (!isRequestedToStop())
                 {
                     sourceContext.getExceptionCallback().onException(e);
                 }

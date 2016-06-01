@@ -18,6 +18,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import org.slf4j.Logger;
@@ -38,18 +39,22 @@ public class TcpClient implements SocketClient
     private final TcpProtocol protocol;
 
     @Override
-    public void write(Object data) throws ConnectionException
+    public void write(Object data) throws IOException, ConnectionException
     {
+        OutputStream socketOutputStream;
         try
         {
-            BufferedOutputStream socketStream = new BufferedOutputStream(socket.getOutputStream());
-            protocol.write(socketStream, data);
-            socketStream.flush();
+            socketOutputStream = socket.getOutputStream();
         }
         catch (IOException e)
         {
             throw new ConnectionException("An error occurred while trying to write into the socket", e);
         }
+
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(socketOutputStream);
+        protocol.write(bufferedOutputStream, data);
+        bufferedOutputStream.flush();
+
     }
 
     @Override

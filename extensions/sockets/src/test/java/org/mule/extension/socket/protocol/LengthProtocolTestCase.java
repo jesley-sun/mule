@@ -9,6 +9,8 @@ package org.mule.extension.socket.protocol;
 import org.mule.extension.socket.SocketExtensionTestCase;
 import org.mule.tck.junit4.rule.DynamicPort;
 
+import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -27,17 +29,16 @@ public class LengthProtocolTestCase extends SocketExtensionTestCase
         return "length-protocol-config.xml";
     }
 
-    @Test
+    @Test(expected = IOException.class)
     public void sendLongerMsgShouldReturnNullPayload() throws Exception
     {
-        flowRunner("tcp-write").withPayload(LONG_TEST_STRING).run();
-        assertNullPayload(receiveConnection());
+        flowRunner("tcp-send").withPayload(LONG_TEST_STRING).run();
     }
 
     @Test
     public void sendShorterMsgShouldWork() throws Exception
     {
-        flowRunner("tcp-write").withPayload(SHORT_TEST_STRING).run();
+        flowRunner("tcp-send").withPayload(SHORT_TEST_STRING).run();
         assertEvent(receiveConnection(), SHORT_TEST_STRING);
     }
 }

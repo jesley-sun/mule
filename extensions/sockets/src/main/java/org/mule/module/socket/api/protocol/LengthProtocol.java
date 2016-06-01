@@ -6,6 +6,7 @@
  */
 package org.mule.module.socket.api.protocol;
 
+import org.mule.module.socket.api.exceptions.LengthExceededException;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 
@@ -75,7 +76,7 @@ public class LengthProtocol extends DirectProtocol
 
         if (length < 0 || (maxMessageLength > 0 && length > maxMessageLength))
         {
-            throw new IOException("Length " + length + " exceeds limit: " + maxMessageLength.toString());
+            throw new LengthExceededException("Length " + length + " exceeds limit: " + maxMessageLength.toString());
         }
 
         // finally read the rest of the data
@@ -88,6 +89,10 @@ public class LengthProtocol extends DirectProtocol
     @Override
     protected void writeByteArray(OutputStream os, byte[] data) throws IOException
     {
+        if (maxMessageLength > 0 && data.length > maxMessageLength)
+        {
+            throw new LengthExceededException(String.format("Message length is '%d' and exceeds the limit '%d", data.length, maxMessageLength));
+        }
         // Write the length and then the data.
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(data.length);

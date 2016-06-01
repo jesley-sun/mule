@@ -38,7 +38,14 @@ public class SocketOperations
                             @Optional(defaultValue = "UTF-8") String encoding) throws ConnectionException, IOException
     {
         SocketClient client = connection.getClient();
-        client.write(data);
-        return client.read();
+        try
+        {
+            client.write(data);
+            return client.read();
+        }
+        catch ()
+        {
+
+        }
     }
 }

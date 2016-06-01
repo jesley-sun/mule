@@ -8,7 +8,6 @@
 package org.mule.module.socket.api.client;
 
 import org.mule.module.socket.api.source.SocketAttributes;
-import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +15,7 @@ import java.io.InputStream;
 public interface SocketClient
 {
 
-    void write(Object data) throws ConnectionException;
+    void write(Object data) throws IOException;
 
     InputStream read() throws IOException;
 

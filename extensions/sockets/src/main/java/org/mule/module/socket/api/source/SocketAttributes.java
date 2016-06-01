@@ -9,6 +9,14 @@ package org.mule.module.socket.api.source;
 
 import java.io.Serializable;
 
+/**
+ * Canonical representation of a socket's metadata attributes.
+ * <p>
+ * It contains information such as a the port from which the
+ * responses are being received, the name of the remote host and its address.
+ *
+ * @since 4.0
+ */
 public interface SocketAttributes extends Serializable
 {
 
