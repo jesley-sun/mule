@@ -26,7 +26,7 @@ public class SafeProtocolTestCase extends SocketExtensionTestCase
     @Test
     public void sendMessageWithSafeCookie() throws Exception
     {
-        flowRunner("tcp-send").withPayload(TEST_STRING).run();
+        flowRunner("tcp-write").withPayload(TEST_STRING).run();
         assertEvent(receiveConnection(), TEST_STRING);
     }
 }

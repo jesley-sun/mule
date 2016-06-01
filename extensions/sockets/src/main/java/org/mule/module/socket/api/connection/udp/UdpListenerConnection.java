@@ -6,14 +6,17 @@
  */
 package org.mule.module.socket.api.connection.udp;
 
+import static org.mule.module.socket.internal.SocketUtils.createPacket;
 import static org.mule.module.socket.internal.SocketUtils.getAddress;
+import static org.mule.module.socket.internal.SocketUtils.newSocket;
 import org.mule.module.socket.api.client.SocketClient;
 import org.mule.module.socket.api.client.UdpClient;
 import org.mule.module.socket.api.connection.ListenerConnection;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
 import org.mule.runtime.api.connection.ConnectionException;
 
-import java.net.SocketException;
+import java.io.IOException;
+import java.net.DatagramPacket;
 
 public class UdpListenerConnection extends AbstractUdpConnection implements ListenerConnection
 {
@@ -26,21 +29,22 @@ public class UdpListenerConnection extends AbstractUdpConnection implements List
     @Override
     public void connect() throws ConnectionException
     {
+        socket = newSocket(host, port);
         configureConnection();
-
-        try
-        {
-            socket.bind(getAddress(host, port));
-        }
-        catch (SocketException e)
-        {
-            throw new ConnectionException(String.format("Could not bind UDP socket to host '%s' on port '%d'", host, port), e);
-        }
     }
 
     @Override
-    public SocketClient listen()
+    public SocketClient listen() throws IOException, ConnectionException
     {
-        return new UdpClient(socket, socketProperties, objectSerializer);
+        DatagramPacket packet = createPacket(socketProperties.getReceiveBufferSize());
+        if (!socket.isBound())
+        {
+            socket.bind(getAddress(host, port));
+        }
+
+        socket.receive(packet);
+
+        return new UdpClient(packet, socketProperties, objectSerializer);
     }
+
 }

@@ -6,21 +6,11 @@
  */
 package org.mule.module.socket.api.connection;
 
-import org.mule.runtime.core.api.serialization.DefaultObjectSerializer;
-import org.mule.runtime.core.api.serialization.ObjectSerializer;
-
-import javax.inject.Inject;
-
 /**
  *
  */
 public abstract class AbstractSocketConnection implements SocketConnection
 {
-
-    @DefaultObjectSerializer
-    @Inject
-    protected ObjectSerializer objectSerializer;
-
     protected String host;
     protected int port;
 

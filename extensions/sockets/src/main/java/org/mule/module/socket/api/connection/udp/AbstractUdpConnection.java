@@ -6,40 +6,41 @@
  */
 package org.mule.module.socket.api.connection.udp;
 
-import static org.mule.module.socket.internal.SocketUtils.getSocketAddressbyName;
 import org.mule.module.socket.api.connection.AbstractSocketConnection;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
 import org.mule.module.socket.internal.SocketUtils;
 import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.core.api.serialization.DefaultObjectSerializer;
+import org.mule.runtime.core.api.serialization.ObjectSerializer;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+
+import javax.inject.Inject;
 
 public abstract class AbstractUdpConnection extends AbstractSocketConnection
 {
 
-    protected final DatagramSocket socket;
+    protected DatagramSocket socket;
     protected final UdpSocketProperties socketProperties;
-    protected InetAddress address;
+
+    @DefaultObjectSerializer
+    @Inject
+    protected ObjectSerializer objectSerializer;
 
     public AbstractUdpConnection(UdpSocketProperties socketProperties, String host, Integer port) throws ConnectionException
     {
         super(host, port);
         this.socketProperties = socketProperties;
-        try
-        {
-            socket = new DatagramSocket();
-        }
-        catch (SocketException e)
-        {
-            throw new ConnectionException("Could not create requester UDP socket");
-        }
     }
 
     protected void configureConnection() throws ConnectionException
     {
+        if (socket == null)
+        {
+            throw new IllegalStateException("UDP Socket must be created before being configured");
+        }
+
         try
         {
             socket.setSendBufferSize(socketProperties.getSendBufferSize());
@@ -47,7 +48,6 @@ public abstract class AbstractUdpConnection extends AbstractSocketConnection
             socket.setBroadcast(socketProperties.getBroadcast());
             socket.setSoTimeout(socketProperties.getTimeout());
             socket.setReuseAddress(socketProperties.getReuseAddress());
-            address = getSocketAddressbyName(host);
         }
         catch (Exception e)
         {

@@ -9,9 +9,17 @@ package org.mule.module.socket.api.connection.tcp;
 import org.mule.module.socket.api.connection.AbstractSocketConnection;
 import org.mule.module.socket.api.protocol.TcpProtocol;
 import org.mule.runtime.core.api.lifecycle.Initialisable;
+import org.mule.runtime.core.api.serialization.DefaultObjectSerializer;
+import org.mule.runtime.core.api.serialization.ObjectSerializer;
+
+import javax.inject.Inject;
 
 abstract class AbstractTcpConnection extends AbstractSocketConnection implements Initialisable
 {
+    @DefaultObjectSerializer
+    @Inject
+    protected ObjectSerializer objectSerializer;
+
     protected final TcpProtocol protocol;
 
     public AbstractTcpConnection(String host, int port, TcpProtocol protocol)

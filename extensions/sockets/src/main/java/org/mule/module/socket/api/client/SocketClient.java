@@ -16,9 +16,9 @@ import java.io.InputStream;
 public interface SocketClient
 {
 
-    void send(Object data) throws ConnectionException;
+    void write(Object data) throws ConnectionException;
 
-    InputStream receive() throws IOException;
+    InputStream read() throws IOException;
 
     void close() throws IOException;
 

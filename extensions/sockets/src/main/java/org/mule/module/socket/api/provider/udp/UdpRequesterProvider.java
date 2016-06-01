@@ -17,14 +17,10 @@ import org.mule.runtime.api.connection.ConnectionHandlingStrategy;
 import org.mule.runtime.api.connection.ConnectionHandlingStrategyFactory;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
-import org.mule.runtime.core.api.serialization.DefaultObjectSerializer;
-import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.Optional;
-
-import javax.inject.Inject;
 
 @Alias("udp-requester")
 public class UdpRequesterProvider implements ConnectionProvider<RequesterConfig, UdpRequesterConnection>
@@ -36,10 +32,6 @@ public class UdpRequesterProvider implements ConnectionProvider<RequesterConfig,
     @Parameter
     @Optional
     DefaultUdpRequestingSocketProperties udpRequestingSocketProperties = new DefaultUdpRequestingSocketProperties();
-
-    @DefaultObjectSerializer
-    @Inject
-    ObjectSerializer objectSerializer;
 
     @Override
     public UdpRequesterConnection connect(RequesterConfig udpConfig) throws ConnectionException, UnresolvableHostException

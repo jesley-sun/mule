@@ -36,6 +36,7 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
     protected static final int TIMEOUT_MILLIS = 5000;
     protected static final int POLL_DELAY_MILLIS = 100;
     public static final String TEST_STRING = "This is a test string";
+    public static final String LISTENER_RESPONSE = TEST_STRING + "_modified";
     protected static List<MuleMessage<?, ImmutableSocketAttributes>> receivedMessages;
 
 

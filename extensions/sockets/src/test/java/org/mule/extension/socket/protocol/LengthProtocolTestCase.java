@@ -30,14 +30,14 @@ public class LengthProtocolTestCase extends SocketExtensionTestCase
     @Test
     public void sendLongerMsgShouldReturnNullPayload() throws Exception
     {
-        flowRunner("tcp-send").withPayload(LONG_TEST_STRING).run();
+        flowRunner("tcp-write").withPayload(LONG_TEST_STRING).run();
         assertNullPayload(receiveConnection());
     }
 
     @Test
     public void sendShorterMsgShouldWork() throws Exception
     {
-        flowRunner("tcp-send").withPayload(SHORT_TEST_STRING).run();
+        flowRunner("tcp-write").withPayload(SHORT_TEST_STRING).run();
         assertEvent(receiveConnection(), SHORT_TEST_STRING);
     }
 }

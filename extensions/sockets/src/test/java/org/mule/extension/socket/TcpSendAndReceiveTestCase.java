@@ -6,7 +6,7 @@
  */
 package org.mule.extension.socket;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import org.mule.runtime.core.util.IOUtils;
 import org.mule.tck.junit4.rule.DynamicPort;
 
@@ -21,6 +21,8 @@ public class TcpSendAndReceiveTestCase extends SocketExtensionTestCase
     @Rule
     public DynamicPort dynamicPortTcp = new DynamicPort("port_tcp");
 
+
+
     @Override
     protected String getConfigFile()
     {
@@ -31,10 +33,9 @@ public class TcpSendAndReceiveTestCase extends SocketExtensionTestCase
     @Test
     public void sendStringAndReceiveModified() throws Exception
     {
-        String flowName = "tcp-send-and-receive";
+        String flowName = "tcp-write-and-read";
         InputStream inputStream = (InputStream) flowRunner(flowName).withPayload(TEST_STRING).run().getMessage().getPayload();
         String response = IOUtils.toString(inputStream);
-        assertThat(response, equals(TEST_STRING.concat("_modified")));
-
+        assertEquals(response, LISTENER_RESPONSE);
     }
 }

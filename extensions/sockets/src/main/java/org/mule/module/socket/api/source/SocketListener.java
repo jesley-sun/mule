@@ -69,6 +69,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
 
             try
             {
+
                 SocketClient client = connection.listen();
                 if (isRequestedToStop())
                 {
@@ -76,7 +77,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
                     return;
                 }
 
-                MuleMessage<InputStream, SocketAttributes> muleMessage = createMuleMessage(client.receive(),
+                MuleMessage<InputStream, SocketAttributes> muleMessage = createMuleMessage(client.read(),
                                                                                            client.getAttributes(),
                                                                                            muleContext);
 
@@ -87,7 +88,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
                     {
                         try
                         {
-                            client.send(muleEvent.getMessage().getPayload());
+                            client.write(muleEvent.getMessage().getPayload());
                         }
                         catch (ConnectionException e)
                         {

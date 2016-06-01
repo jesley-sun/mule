@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * This Abstract class has been introduced so as to have the byte protocols (i.e. the
  * protocols that had only a single write method taking just an array of bytes as a
  * parameter) to inherit from since they will all behave the same, i.e. if the object
- * is serializable, serialize it into an array of bytes and send it.
+ * is serializable, serialize it into an array of bytes and write it.
  *
  * @since 4.0
  */

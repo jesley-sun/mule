@@ -10,6 +10,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.mule.module.socket.api.connection.AbstractSocketConnection;
 import org.mule.module.socket.api.exceptions.UnresolvableHostException;
 import org.mule.module.socket.api.source.SocketAttributes;
+import org.mule.module.socket.api.udp.UdpSocketProperties;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionExceptionCode;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -175,5 +177,93 @@ public class SocketUtils
         Object payload = NullPayload.getInstance();
         DataType dataType = DataTypeFactory.create(NullPayload.class);
         return (MuleMessage) new DefaultMuleMessage(payload, dataType, attributes, muleContext);
+    }
+
+    /**
+     * Creates a {@link DatagramPacket} with the size of the content, addressed to
+     * the port and address of the client.
+     *
+     * @param content that is going to be sent inside the packet
+     * @return a packet ready to be sent
+     * @throws UnresolvableHostException
+     */
+    public static DatagramPacket createPacket(byte[] content) throws UnresolvableHostException
+    {
+        DatagramPacket packet = new DatagramPacket(content, content.length);
+        return packet;
+    }
+
+    /**
+     * @return a packet configured to be used for receiving purposes
+     * @throws UnresolvableHostException
+     */
+    public static DatagramPacket createPacket(int bufferSize) throws UnresolvableHostException
+    {
+        DatagramPacket packet = new DatagramPacket(new byte[bufferSize], bufferSize);
+        return packet;
+    }
+
+    public static  DatagramSocket newSocket(String host, Integer port) throws ConnectionException
+    {
+        try
+        {
+            //return new DatagramSocket(port, getSocketAddressbyName(host));
+            return new DatagramSocket(getAddress(host, port));
+        }
+        catch (Exception e)
+        {
+            throw new ConnectionException("Could not bind UDP Socket", e);
+        }
+    }
+
+    public static  DatagramSocket connectSocket(DatagramSocket socket, String host, int port) throws ConnectionException
+    {
+        try
+        {
+            socket.connect(getAddress(host, port));
+            return socket;
+
+        }
+        catch (Exception e)
+        {
+            throw new ConnectionException(String.format("Could not connect UDP socket to host '%s' on port '%d'", host, port), e);
+        }
+    }
+
+    public static  DatagramSocket connectSocket(DatagramSocket socket, InetAddress address, int port) throws ConnectionException
+    {
+        try
+        {
+            socket.connect(address, port);
+            return socket;
+
+        }
+        catch (Exception e)
+        {
+            throw new ConnectionException(String.format("Could not connect UDP socket to host '%s' on port '%d'",
+                                                        address.getHostAddress(), port), e);
+
+        }
+    }
+
+    public static void configureConnection(DatagramSocket socket, UdpSocketProperties socketProperties) throws ConnectionException
+    {
+        if (socket == null)
+        {
+            throw new IllegalStateException("UDP Socket must be created before being configured");
+        }
+
+        try
+        {
+            socket.setSendBufferSize(socketProperties.getSendBufferSize());
+            socket.setReceiveBufferSize(socketProperties.getReceiveBufferSize());
+            socket.setBroadcast(socketProperties.getBroadcast());
+            socket.setSoTimeout(socketProperties.getTimeout());
+            socket.setReuseAddress(socketProperties.getReuseAddress());
+        }
+        catch (Exception e)
+        {
+            throw new ConnectionException("UDP Socket could not be created", e);
+        }
     }
 }

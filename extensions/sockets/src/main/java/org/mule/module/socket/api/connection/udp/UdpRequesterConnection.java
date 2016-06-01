@@ -6,17 +6,17 @@
  */
 package org.mule.module.socket.api.connection.udp;
 
-import static org.mule.module.socket.internal.SocketUtils.getAddress;
+import static org.mule.module.socket.internal.SocketUtils.newSocket;
+import static org.mule.module.socket.internal.SocketUtils.connectSocket;
 import org.mule.module.socket.api.client.SocketClient;
 import org.mule.module.socket.api.client.UdpClient;
 import org.mule.module.socket.api.connection.RequesterConnection;
 import org.mule.module.socket.internal.DefaultUdpRequestingSocketProperties;
 import org.mule.runtime.api.connection.ConnectionException;
 
-import java.net.InetSocketAddress;
-
 public class UdpRequesterConnection extends AbstractUdpConnection implements RequesterConnection
 {
+
     private final DefaultUdpRequestingSocketProperties requestingSocketProperties;
 
     public UdpRequesterConnection(DefaultUdpRequestingSocketProperties socketProperties, String host, Integer port) throws ConnectionException
@@ -28,19 +28,10 @@ public class UdpRequesterConnection extends AbstractUdpConnection implements Req
     @Override
     public void connect() throws ConnectionException
     {
+        socket = newSocket(requestingSocketProperties.getBindingHost(), requestingSocketProperties.getLocalPort());
         configureConnection();
 
-        try
-        {
-            InetSocketAddress receivingAddress = getAddress(requestingSocketProperties.getBindingHost(), requestingSocketProperties.getLocalPort());
-            socket.bind(receivingAddress);
-
-            socket.connect(address, port);
-        }
-        catch (Exception e)
-        {
-            throw new ConnectionException(String.format("Could not connect UDP socket to host '%s' on port '%d'", host, port), e);
-        }
+        connectSocket(socket, host, port);
     }
 
     @Override
@@ -48,4 +39,5 @@ public class UdpRequesterConnection extends AbstractUdpConnection implements Req
     {
         return new UdpClient(socket, socketProperties, objectSerializer);
     }
+
 }

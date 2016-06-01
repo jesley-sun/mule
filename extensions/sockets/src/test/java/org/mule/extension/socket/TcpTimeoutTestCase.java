@@ -41,7 +41,7 @@ public class TcpTimeoutTestCase extends SocketExtensionTestCase
 
         try
         {
-            flowRunner("tcp-send-with-timeout").withPayload(TEST_STRING).runExpectingException();
+            flowRunner("tcp-write-with-timeout").withPayload(TEST_STRING).runExpectingException();
             fail("Expected timeout exception but no exception was thrown");
         }
         catch (Exception e)

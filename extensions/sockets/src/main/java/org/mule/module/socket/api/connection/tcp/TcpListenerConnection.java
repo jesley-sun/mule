@@ -109,8 +109,7 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
         {
             serverSocket = new ServerSocket();
 
-            // todo socket timeout must be always 0
-            //socket.setSoTimeout(socketProperties.getTimeout());
+            serverSocket.setSoTimeout(socketProperties.getTimeout());
             serverSocket.setReceiveBufferSize(socketProperties.getReceiveBufferSize());
             serverSocket.setReuseAddress(socketProperties.getReuseAddress());
         }

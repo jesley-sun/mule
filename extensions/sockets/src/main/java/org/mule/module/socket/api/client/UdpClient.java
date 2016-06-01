@@ -7,7 +7,8 @@
 package org.mule.module.socket.api.client;
 
 import static java.util.Arrays.copyOf;
-import org.mule.module.socket.api.exceptions.UnresolvableHostException;
+import static org.mule.module.socket.internal.SocketUtils.connectSocket;
+import static org.mule.module.socket.internal.SocketUtils.createPacket;
 import org.mule.module.socket.api.source.ImmutableSocketAttributes;
 import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
@@ -24,24 +25,43 @@ import java.net.DatagramSocket;
 public class UdpClient implements SocketClient
 {
 
-    private final DatagramSocket socket;
+    private DatagramSocket socket;
+    private DatagramPacket packet;
     private final UdpSocketProperties socketProperties;
     private final ObjectSerializer objectSerializer;
 
+    // used in the operation
     public UdpClient(DatagramSocket socket, UdpSocketProperties socketProperties, ObjectSerializer objectSerializer)
     {
         this.socket = socket;
+
+        this.socketProperties = socketProperties;
+        this.objectSerializer = objectSerializer;
+    }
+
+    // used in the source
+    public UdpClient(DatagramPacket packet, UdpSocketProperties socketProperties, ObjectSerializer objectSerializer)
+    {
+        this.packet = packet;
+
         this.socketProperties = socketProperties;
         this.objectSerializer = objectSerializer;
     }
 
     @Override
-    public void send(Object data) throws ConnectionException
+    public void write(Object data) throws ConnectionException
     {
         try
         {
+            if (socket == null)
+            {
+                socket = connectSocket(new DatagramSocket(), packet.getAddress(), packet.getPort());
+                SocketUtils.configureConnection(socket, socketProperties);
+            }
+
             byte[] byteArray = SocketUtils.getByteArray(data, true, false, objectSerializer);
             DatagramPacket sendPacket = createPacket(byteArray);
+
             socket.send(sendPacket);
         }
         catch (IOException e)
@@ -51,9 +71,14 @@ public class UdpClient implements SocketClient
     }
 
     @Override
-    public InputStream receive() throws IOException
+    public InputStream read() throws IOException
     {
-        DatagramPacket packet = createPacket();
+        if (packet != null)
+        {
+            return new ByteArrayInputStream(copyOf(packet.getData(), packet.getLength()));
+        }
+
+        DatagramPacket packet = SocketUtils.createPacket(socketProperties.getReceiveBufferSize());
         socket.receive(packet);
         return new ByteArrayInputStream(copyOf(packet.getData(), packet.getLength()));
     }
@@ -68,30 +93,5 @@ public class UdpClient implements SocketClient
     public SocketAttributes getAttributes()
     {
         return new ImmutableSocketAttributes(socket);
-    }
-
-    /**
-     * Creates a {@link DatagramPacket} with the size of the content, addressed to
-     * the port and address of the client.
-     *
-     * @param content that is going to be sent inside the packet
-     * @return a packet ready to be sent
-     * @throws UnresolvableHostException
-     */
-    private DatagramPacket createPacket(byte[] content) throws UnresolvableHostException
-    {
-        DatagramPacket packet = new DatagramPacket(content, content.length);
-        return packet;
-    }
-
-    /**
-     * @return a packet configured to be used for receiving purposes
-     * @throws UnresolvableHostException
-     */
-    private DatagramPacket createPacket() throws UnresolvableHostException
-    {
-        int bufferSize = socketProperties.getReceiveBufferSize();
-        DatagramPacket packet = new DatagramPacket(new byte[bufferSize], bufferSize);
-        return packet;
     }
 }

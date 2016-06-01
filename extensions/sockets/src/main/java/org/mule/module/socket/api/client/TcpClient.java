@@ -38,7 +38,7 @@ public class TcpClient implements SocketClient
     private final TcpProtocol protocol;
 
     @Override
-    public void send(Object data) throws ConnectionException
+    public void write(Object data) throws ConnectionException
     {
         try
         {
@@ -53,10 +53,9 @@ public class TcpClient implements SocketClient
     }
 
     @Override
-    public InputStream receive() throws IOException
+    public InputStream read() throws IOException
     {
-        DataInputStream underlyingIs = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        TcpInputStream inputStream = new TcpInputStream(underlyingIs);
+        TcpInputStream inputStream = new TcpInputStream(new DataInputStream(new BufferedInputStream(socket.getInputStream())));
         return protocol.read(inputStream);
     }
 

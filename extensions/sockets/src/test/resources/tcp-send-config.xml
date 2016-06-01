@@ -28,11 +28,9 @@
         </sockets:tcp-listener-connection>
     </sockets:listener-config>
 
-
     <flow name="tcp-send">
         <sockets:send config-ref="tcp-requester"/>
     </flow>
-
 
     <flow name="tcp-listen">
         <sockets:socket-listener config-ref="tcp-listener"/>

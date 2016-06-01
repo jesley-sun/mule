@@ -26,12 +26,13 @@ public class UdpSendTestCase extends SocketExtensionTestCase
     @Test
     public void sendPojo() throws Exception
     {
-        sendPojo("udp-send");
+        sendPojo("udp-write");
     }
 
     @Test
     public void sendString() throws Exception
     {
         sendString("udp-send");
+        //flowRunner("udp-listen").run();
     }
 }

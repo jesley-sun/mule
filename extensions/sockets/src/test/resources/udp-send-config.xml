@@ -5,19 +5,18 @@
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
        http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd">
 
-
     <sockets:requester-config name="udp-requester">
         <sockets:udp-requester-connection host="localhost" port="${port_udp}">
-            <sockets:udp-socket-properties>
-                <sockets:default-udp-socket-properties broadcast="false"/>
-            </sockets:udp-socket-properties>
+            <sockets:udp-requesting-socket-properties>
+                <sockets:default-udp-requesting-socket-properties broadcast="false" timeout="5000"/>
+            </sockets:udp-requesting-socket-properties>
         </sockets:udp-requester-connection>
     </sockets:requester-config>
 
     <sockets:listener-config name="udp-listener">
         <sockets:udp-listener-connection host="localhost" port="${port_udp}">
             <sockets:udp-socket-properties>
-                <sockets:default-udp-socket-properties broadcast="false"/>
+                <sockets:default-udp-socket-properties broadcast="false" />
             </sockets:udp-socket-properties>
         </sockets:udp-listener-connection>
     </sockets:listener-config>
@@ -29,6 +28,8 @@
     <flow name="udp-listen">
         <sockets:socket-listener config-ref="udp-listener"/>
         <flow-ref name="onIncomingConnection"/>
+        <set-payload value="Consumed"/>
+        <logger message="#[payload]"/>
     </flow>
 
     <sub-flow name="onIncomingConnection">

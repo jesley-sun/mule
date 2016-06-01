@@ -19,7 +19,7 @@ public interface UdpSocketProperties extends SocketProperties
 {
 
     /**
-     * Whether to enable the socket to send broadcast data
+     * Whether to enable the socket to write broadcast data
      */
     boolean getBroadcast();
 

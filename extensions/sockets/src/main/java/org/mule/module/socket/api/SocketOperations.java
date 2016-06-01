@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Basic set of operations for extensions which send content
+ * Basic set of operations for extensions which write content
  * across a generic socket
  *
  * @since 4.0
@@ -38,8 +38,22 @@ public class SocketOperations
                             @Optional(defaultValue = "UTF-8") String encoding) throws ConnectionException, IOException
     {
         SocketClient client = connection.getClient();
-        client.send(data);
-        return client.receive();
+        client.write(data);
+        //new Thread(() -> {
+        //    try
+        //    {
+        //        InputStream read = client.read();
+        //        assert read != null;
+        //    }
+        //    catch (IOException e)
+        //    {
+        //        e.printStackTrace();
+        //    }
+        //}, "MYTHREAD").start();
+        //
+        //return null;
+        return client.read();
+
 
     }
 }
