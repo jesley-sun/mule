@@ -39,21 +39,6 @@ public class SocketOperations
     {
         SocketClient client = connection.getClient();
         client.write(data);
-        //new Thread(() -> {
-        //    try
-        //    {
-        //        InputStream read = client.read();
-        //        assert read != null;
-        //    }
-        //    catch (IOException e)
-        //    {
-        //        e.printStackTrace();
-        //    }
-        //}, "MYTHREAD").start();
-        //
-        //return null;
         return client.read();
-
-
     }
 }

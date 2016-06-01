@@ -41,9 +41,7 @@ public class UdpListenerConnection extends AbstractUdpConnection implements List
         {
             socket.bind(getAddress(host, port));
         }
-
         socket.receive(packet);
-
         return new UdpClient(packet, socketProperties, objectSerializer);
     }
 

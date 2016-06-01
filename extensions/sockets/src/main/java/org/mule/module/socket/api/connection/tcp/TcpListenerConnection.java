@@ -99,6 +99,7 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
         catch (IOException e)
         {
             LOGGER.error("An error occurred when closing TCP listener socket");
+            LOGGER.error(e.getMessage());
         }
     }
 

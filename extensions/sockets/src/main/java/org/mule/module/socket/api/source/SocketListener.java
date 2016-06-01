@@ -13,7 +13,6 @@ import static org.mule.module.socket.internal.SocketUtils.createMuleMessage;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
 import org.mule.module.socket.api.client.SocketClient;
 import org.mule.module.socket.api.connection.ListenerConnection;
-import org.mule.module.socket.internal.UdpSocketDelegate;
 import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.execution.CompletionHandler;
 import org.mule.runtime.api.execution.ExceptionCallback;
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public class SocketListener extends Source<InputStream, SocketAttributes> implements FlowConstructAware
 {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UdpSocketDelegate.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SocketListener.class);
     private ExecutorService executorService;
     private FlowConstruct flowConstruct;
 
@@ -71,6 +70,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             {
 
                 SocketClient client = connection.listen();
+
                 if (isRequestedToStop())
                 {
                     client.close();
@@ -86,6 +86,17 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
                     @Override
                     public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback)
                     {
+                        if (isRequestedToStop())
+                        {
+                            try
+                            {
+                                client.close();
+                            }
+                            catch (IOException e)
+                            {
+                                LOGGER.error(e.getMessage());
+                            }
+                        }
                         try
                         {
                             client.write(muleEvent.getMessage().getPayload());
@@ -114,13 +125,14 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             }
             catch (ConnectionException e)
             {
-                sourceContext.getExceptionCallback().onException(e);
-                return;
+                if(!isRequestedToStop())
+                {
+                    sourceContext.getExceptionCallback().onException(e);
+                }
             }
             catch (Exception e)
             {
                 // keep listening
-                e.printStackTrace();
                 LOGGER.debug(e.getMessage());
             }
         }
@@ -130,11 +142,6 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
     @Override
     public void stop()
     {
-        if (connection != null)
-        {
-            connection.disconnect();
-        }
-
         stopRequested.set(true);
         shutdownExecutor();
     }
@@ -159,7 +166,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             {
                 if (LOGGER.isWarnEnabled())
                 {
-                    LOGGER.warn("Could not properly terminate pending events for directory listener on flow " + flowConstruct.getName());
+                    LOGGER.warn("Could not properly terminate pending events for socket listener on flow " + flowConstruct.getName());
                 }
             }
         }
@@ -167,7 +174,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
         {
             if (LOGGER.isWarnEnabled())
             {
-                LOGGER.warn("Got interrupted while trying to terminate pending events for directory listener on flow " + flowConstruct.getName());
+                LOGGER.warn("Got interrupted while trying to terminate pending events for socket listener on flow " + flowConstruct.getName());
             }
         }
     }

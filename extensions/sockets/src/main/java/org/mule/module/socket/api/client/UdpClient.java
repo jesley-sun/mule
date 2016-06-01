@@ -79,8 +79,15 @@ public class UdpClient implements SocketClient
         }
 
         DatagramPacket packet = SocketUtils.createPacket(socketProperties.getReceiveBufferSize());
-        socket.receive(packet);
-        return new ByteArrayInputStream(copyOf(packet.getData(), packet.getLength()));
+        try
+        {
+            socket.receive(packet);
+            return new ByteArrayInputStream(copyOf(packet.getData(), packet.getLength()));
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 
     @Override
@@ -92,6 +99,11 @@ public class UdpClient implements SocketClient
     @Override
     public SocketAttributes getAttributes()
     {
+        if (packet != null)
+        {
+            return new ImmutableSocketAttributes(packet);
+        }
+
         return new ImmutableSocketAttributes(socket);
     }
 }

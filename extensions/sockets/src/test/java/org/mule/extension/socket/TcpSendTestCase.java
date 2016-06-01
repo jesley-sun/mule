@@ -26,13 +26,13 @@ public class TcpSendTestCase extends SocketExtensionTestCase
     @Test
     public void sendPojo() throws Exception
     {
-        sendPojo("tcp-write");
+        sendPojo("tcp-send");
     }
 
     @Test
     public void sendString() throws Exception
     {
-        sendString("tcp-write");
+        sendString("tcp-send");
     }
 
     @Test
@@ -40,7 +40,7 @@ public class TcpSendTestCase extends SocketExtensionTestCase
     {
         for (int i = 0; i < 5; i++)
         {
-            flowRunner("tcp-write").withPayload(TEST_STRING).run();
+            flowRunner("tcp-send").withPayload(TEST_STRING).run();
         }
 
         for (int i = 0; i < 5; i++)

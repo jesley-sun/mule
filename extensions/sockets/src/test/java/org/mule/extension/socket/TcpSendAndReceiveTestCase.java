@@ -33,8 +33,7 @@ public class TcpSendAndReceiveTestCase extends SocketExtensionTestCase
     @Test
     public void sendStringAndReceiveModified() throws Exception
     {
-        String flowName = "tcp-write-and-read";
-        InputStream inputStream = (InputStream) flowRunner(flowName).withPayload(TEST_STRING).run().getMessage().getPayload();
+        InputStream inputStream = (InputStream) flowRunner("tcp-send-and-receive").withPayload(TEST_STRING).run().getMessage().getPayload();
         String response = IOUtils.toString(inputStream);
         assertEquals(response, LISTENER_RESPONSE);
     }

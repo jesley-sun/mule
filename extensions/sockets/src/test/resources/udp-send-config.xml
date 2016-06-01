@@ -16,7 +16,7 @@
     <sockets:listener-config name="udp-listener">
         <sockets:udp-listener-connection host="localhost" port="${port_udp}">
             <sockets:udp-socket-properties>
-                <sockets:default-udp-socket-properties broadcast="false" />
+                <sockets:default-udp-socket-properties broadcast="false"/>
             </sockets:udp-socket-properties>
         </sockets:udp-listener-connection>
     </sockets:listener-config>

@@ -8,6 +8,7 @@ package org.mule.module.socket.api.source;
 
 import static org.apache.commons.lang.StringUtils.EMPTY;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -27,6 +28,11 @@ public class ImmutableSocketAttributes implements SocketAttributes
     public ImmutableSocketAttributes(DatagramSocket datagramSocket)
     {
         fromInetAddress(datagramSocket.getPort(), datagramSocket.getInetAddress());
+    }
+
+    public ImmutableSocketAttributes(DatagramPacket packet)
+    {
+        this(packet.getPort(), packet.getAddress().getHostAddress(), packet.getAddress().getHostName());
     }
 
     private void fromInetAddress(int port, InetAddress address)
