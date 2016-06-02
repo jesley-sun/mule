@@ -86,6 +86,8 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
     {
         Socket newConnection = acceptConnection();
         configureIncomingConnection(newConnection);
+        //TODO this is a temporary fix until lifecycle in connections for sources is fixed
+        protocol.setObjectSerializer(objectSerializer);
         return new TcpClient(newConnection, protocol);
     }
 

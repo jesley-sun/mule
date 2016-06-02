@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.mule.functional.junit4.ExtensionFunctionalTestCase;
 import org.mule.module.socket.api.SocketsExtension;
-import org.mule.module.socket.api.source.ImmutableSocketAttributes;
+import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.runtime.api.message.MuleMessage;
 import org.mule.runtime.api.message.NullPayload;
 import org.mule.runtime.api.metadata.DataType;
@@ -36,15 +36,14 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
     protected static final int TIMEOUT_MILLIS = 5000;
     protected static final int POLL_DELAY_MILLIS = 100;
     public static final String TEST_STRING = "This is a test string";
-    public static final String LISTENER_RESPONSE = TEST_STRING + "_modified";
-    protected static List<MuleMessage<?, ImmutableSocketAttributes>> receivedMessages;
+    protected static List<MuleMessage<?, SocketAttributes>> receivedMessages;
 
 
     protected static final String NAME = "Messi";
     protected static final int AGE = 10;
     protected TestPojo testPojo;
 
-    protected void assertPojo(MuleMessage<?, ImmutableSocketAttributes> message, TestPojo expectedContent) throws Exception
+    protected void assertPojo(MuleMessage<?, SocketAttributes> message, TestPojo expectedContent) throws Exception
     {
         if (message.getPayload() == null)
         {
@@ -84,28 +83,28 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
         return new Class<?>[] {SocketsExtension.class};
     }
 
-    protected void assertNullPayload(MuleMessage<?, ImmutableSocketAttributes> message)
+    protected void assertNullPayload(MuleMessage<?, SocketAttributes> message)
     {
         assertThat(message.getPayload(), instanceOf(NullPayload.class));
     }
 
-    protected void assertEvent(MuleMessage<?, ImmutableSocketAttributes> message, Object expectedContent) throws Exception
+    protected void assertEvent(MuleMessage<?, SocketAttributes> message, Object expectedContent) throws Exception
     {
         String payload = IOUtils.toString((InputStream) message.getPayload());
         assertEquals(expectedContent, payload);
     }
 
-    protected Object deserializeMessage(MuleMessage<?, ImmutableSocketAttributes> message) throws Exception
+    protected Object deserializeMessage(MuleMessage<?, SocketAttributes> message) throws Exception
     {
         return muleContext.getObjectSerializer().deserialize(IOUtils.toByteArray((InputStream) message.getPayload()));
     }
 
-    protected MuleMessage<?, ImmutableSocketAttributes> receiveConnection()
+    protected MuleMessage<?, SocketAttributes> receiveConnection()
     {
         PollingProber prober = new PollingProber(TIMEOUT_MILLIS, POLL_DELAY_MILLIS);
-        ValueHolder<MuleMessage<?, ImmutableSocketAttributes>> messageHolder = new ValueHolder<>();
+        ValueHolder<MuleMessage<?, SocketAttributes>> messageHolder = new ValueHolder<>();
         prober.check(new JUnitLambdaProbe(() -> {
-            for (MuleMessage<?, ImmutableSocketAttributes> message : receivedMessages)
+            for (MuleMessage<?, SocketAttributes> message : receivedMessages)
             {
                 messageHolder.set(message);
                 return true;

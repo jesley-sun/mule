@@ -11,7 +11,6 @@ import org.mule.module.socket.api.source.ImmutableSocketAttributes;
 import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.module.socket.internal.SocketUtils;
 import org.mule.module.socket.internal.TcpInputStream;
-import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,7 +38,7 @@ public class TcpClient implements SocketClient
     private final TcpProtocol protocol;
 
     @Override
-    public void write(Object data) throws IOException, ConnectionException
+    public void write(Object data) throws IOException
     {
         OutputStream socketOutputStream;
         try
@@ -48,7 +47,8 @@ public class TcpClient implements SocketClient
         }
         catch (IOException e)
         {
-            throw new ConnectionException("An error occurred while trying to write into the socket", e);
+            throw e;
+            //throw new ConnectionException("An error occurred while trying to write into the socket", e);
         }
 
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(socketOutputStream);

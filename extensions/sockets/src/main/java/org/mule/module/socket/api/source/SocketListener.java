@@ -106,7 +106,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
                         {
                             client.write(muleEvent.getMessage().getPayload());
                         }
-                        catch (ConnectionException e)
+                        catch (IOException e)
                         {
                             exceptionCallback.onException(e);
                         }
@@ -138,6 +138,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             catch (Exception e)
             {
                 // keep listening
+                e.printStackTrace();
                 LOGGER.debug(e.getMessage());
             }
         }

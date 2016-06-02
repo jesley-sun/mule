@@ -6,34 +6,27 @@
        http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd">
 
     <sockets:requester-config name="tcp-requester">
-        <sockets:tcp-requester-connection host="localhost" port="${port1}">
-            <sockets:protocol>
-                <sockets:direct-protocol/>
-            </sockets:protocol>
-        </sockets:tcp-requester-connection>
+        <sockets:tcp-requester-connection host="localhost" port="${port_tcp}" protocol="#[flowVars.protocol]"/>
     </sockets:requester-config>
 
     <sockets:listener-config name="tcp-listener">
-        <sockets:tcp-listener-connection host="localhost" port="${port1}">
-            <sockets:protocol>
-                <sockets:direct-protocol/>
-            </sockets:protocol>
-        </sockets:tcp-listener-connection>
+        <sockets:tcp-listener-connection host="localhost" port="${port_tcp}" protocol="#[flowVars.protocol]"/>
     </sockets:listener-config>
 
-    <flow name="tcp-send">
+    <flow name="tcp-send-and-receive">
         <sockets:send config-ref="tcp-requester"/>
     </flow>
 
-    <flow name="tcp-listen">
+    <flow name="tcp-listen-and-modify-pojo">
         <sockets:socket-listener config-ref="tcp-listener"/>
-        <flow-ref name="onIncomingConnection"/>
-        <set-payload value="Consumed"/>
-    </flow>
-
-    <sub-flow name="onIncomingConnection">
-        <expression-component>org.mule.extension.socket.SocketExtensionTestCase.onIncomingConnection(message)
+        <byte-array-to-object-transformer returnClass="org.mule.extension.socket.TestPojo"/>
+        <expression-component>
+            payload.setAge(7)
         </expression-component>
-    </sub-flow>
 
+        <expression-component>
+            payload.setName("Ronaldo")
+        </expression-component>
+
+    </flow>
 </mule>

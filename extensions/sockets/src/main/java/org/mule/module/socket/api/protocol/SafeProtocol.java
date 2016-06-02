@@ -6,9 +6,6 @@
  */
 package org.mule.module.socket.api.protocol;
 
-import org.mule.runtime.core.api.MuleException;
-import org.mule.runtime.core.api.lifecycle.Startable;
-import org.mule.runtime.core.api.serialization.DefaultObjectSerializer;
 import org.mule.runtime.core.api.serialization.ObjectSerializer;
 import org.mule.runtime.core.util.IOUtils;
 import org.mule.runtime.extension.api.annotation.Parameter;
@@ -18,8 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.inject.Inject;
-
 /**
  * This precedes every message with a cookie.
  * It should probably not be used in production.
@@ -27,7 +22,7 @@ import javax.inject.Inject;
  * You should probably change to LengthProtocol.
  * Remember - both sender and receiver must use the same protocol.
  */
-public class SafeProtocol extends AbstractByteProtocol implements Startable
+public class SafeProtocol extends AbstractByteProtocol
 {
 
     public static final String COOKIE = "You are using SafeProtocol";
@@ -127,22 +122,10 @@ public class SafeProtocol extends AbstractByteProtocol implements Startable
     }
 
     @Override
-    public void start() throws MuleException
-    {
-        delegate = new LengthProtocol(maxMessageLeght);
-    }
-
-    @Inject
-    @DefaultObjectSerializer
     public void setObjectSerializer(ObjectSerializer objectSerializer)
     {
-        propagateObjectSerializerIfNecessary(delegate, objectSerializer);
-        propagateObjectSerializerIfNecessary(cookieProtocol, objectSerializer);
+        this.objectSerializer = objectSerializer;
+        delegate.setObjectSerializer(objectSerializer);
+        cookieProtocol.setObjectSerializer(objectSerializer);
     }
-
-    private void propagateObjectSerializerIfNecessary(TcpProtocol protocol, ObjectSerializer objectSerializer)
-    {
-        protocol.setObjectSerializer(objectSerializer);
-    }
-
 }

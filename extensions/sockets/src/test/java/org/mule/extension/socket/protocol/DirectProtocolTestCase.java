@@ -24,9 +24,8 @@ public class DirectProtocolTestCase extends SocketExtensionTestCase
     }
 
     @Test
-    public void sendMessageWithSafeCookie() throws Exception
+    public void sendString() throws Exception
     {
-        flowRunner("tcp-send").withPayload(TEST_STRING).run();
-        assertEvent(receiveConnection(), TEST_STRING);
+        sendString("tcp-send");
     }
 }

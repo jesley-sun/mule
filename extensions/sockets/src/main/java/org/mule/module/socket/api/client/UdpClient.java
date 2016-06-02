@@ -9,6 +9,7 @@ package org.mule.module.socket.api.client;
 import static java.util.Arrays.copyOf;
 import static org.mule.module.socket.internal.SocketUtils.connectSocket;
 import static org.mule.module.socket.internal.SocketUtils.createPacket;
+import org.mule.module.socket.api.exceptions.ReadingTimeoutException;
 import org.mule.module.socket.api.source.ImmutableSocketAttributes;
 import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketTimeoutException;
 
 public class UdpClient implements SocketClient
 {
@@ -49,7 +51,7 @@ public class UdpClient implements SocketClient
     }
 
     @Override
-    public void write(Object data) throws ConnectionException
+    public void write(Object data) throws IOException
     {
         try
         {
@@ -66,7 +68,13 @@ public class UdpClient implements SocketClient
         }
         catch (IOException e)
         {
-            throw new ConnectionException("An error occurred while trying to write into the UDP socket", e);
+            throw e;
+            //throw new ConnectionException("An error occurred while trying to write into the UDP socket", e);
+        }
+        catch (ConnectionException e)
+        {
+            // todo throw exception that leads to reconnection outside the client
+            e.printStackTrace();
         }
     }
 
@@ -84,16 +92,19 @@ public class UdpClient implements SocketClient
             socket.receive(packet);
             return new ByteArrayInputStream(copyOf(packet.getData(), packet.getLength()));
         }
-        catch (Exception e)
+        catch (SocketTimeoutException e)
         {
-            return null;
+             throw new ReadingTimeoutException("UDP socket timed out while waiting for a response", e);
         }
     }
 
     @Override
     public void close() throws IOException
     {
-        SocketUtils.closeSocket(socket);
+        if (socket != null)
+        {
+            SocketUtils.closeSocket(socket);
+        }
     }
 
     @Override

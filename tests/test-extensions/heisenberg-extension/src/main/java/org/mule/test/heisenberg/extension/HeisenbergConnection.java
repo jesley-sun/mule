@@ -6,7 +6,10 @@
  */
 package org.mule.test.heisenberg.extension;
 
-public class HeisenbergConnection
+import org.mule.runtime.core.api.lifecycle.Initialisable;
+import org.mule.runtime.core.api.lifecycle.InitialisationException;
+
+public class HeisenbergConnection implements Initialisable
 {
 
     private boolean connected = true;
@@ -35,5 +38,11 @@ public class HeisenbergConnection
     public String getSaulPhoneNumber()
     {
         return saulPhoneNumber;
+    }
+
+    @Override
+    public void initialise() throws InitialisationException
+    {
+        System.out.println("initialise source connection");
     }
 }

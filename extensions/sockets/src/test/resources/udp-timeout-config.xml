@@ -7,29 +7,32 @@
       http://www.mulesoft.org/schema/mule/test http://www.mulesoft.org/schema/mule/test/current/mule-test.xsd
        http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd">
 
-    <sockets:requester-config name="tcp-requester-with-timeout">
-        <sockets:tcp-requester-connection host="localhost" port="${port1}">
-            <sockets:tcp-client-socket-properties>
-                <sockets:default-tcp-client-socket-properties/>
-            </sockets:tcp-client-socket-properties>
-        </sockets:tcp-requester-connection>
+    <sockets:requester-config name="udp-requester-with-timeout">
+        <sockets:udp-requester-connection host="localhost" port="${port1}">
+            <sockets:udp-requesting-socket-properties>
+                <sockets:default-udp-requesting-socket-properties timeout="100"/>
+            </sockets:udp-requesting-socket-properties>
+        </sockets:udp-requester-connection>
     </sockets:requester-config>
 
-    <sockets:listener-config name="tcp-listener">
-        <sockets:tcp-listener-connection host="localhost" port="${port1}">
-            <sockets:tcp-server-socket-properties>
-                <sockets:default-tcp-server-socket-properties timeout="100"/>
-            </sockets:tcp-server-socket-properties>
-        </sockets:tcp-listener-connection>
+    <sockets:listener-config name="udp-listener">
+        <sockets:udp-listener-connection host="localhost" port="${port1}">
+            <sockets:udp-socket-properties>
+                <sockets:default-udp-socket-properties/>
+            </sockets:udp-socket-properties>
+        </sockets:udp-listener-connection>
+
     </sockets:listener-config>
 
-    <flow name="tcp-send-with-timeout">
-        <sockets:send config-ref="tcp-requester-with-timeout"/>
+    <flow name="udp-send-with-timeout">
+        <sockets:send config-ref="udp-requester-with-timeout"/>
     </flow>
 
-    <flow name="tcp-listen">
-        <sockets:socket-listener config-ref="tcp-listener"/>
+    <flow name="udp-listen">
+        <sockets:socket-listener config-ref="udp-listener"/>
         <flow-ref name="onIncomingConnection"/>
+        <set-payload value="Consumed"/>
+        <test:component waitTime="500"/>
     </flow>
 
     <sub-flow name="onIncomingConnection">

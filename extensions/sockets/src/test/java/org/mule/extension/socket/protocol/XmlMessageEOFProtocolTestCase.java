@@ -31,7 +31,6 @@ public class XmlMessageEOFProtocolTestCase extends XmlMessageProtocolTestCase
 
         InputStream result = read(bais);
         assertNotNull(result);
-        // hurray!  get everything
         assertEquals(msgData, IOUtils.toString(result));
     }
 
