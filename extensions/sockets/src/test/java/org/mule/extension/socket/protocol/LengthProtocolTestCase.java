@@ -6,13 +6,16 @@
  */
 package org.mule.extension.socket.protocol;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.rules.ExpectedException.none;
 import org.mule.extension.socket.SocketExtensionTestCase;
+import org.mule.module.socket.api.exceptions.LengthExceededException;
+import org.mule.runtime.core.api.MessagingException;
 import org.mule.tck.junit4.rule.DynamicPort;
-
-import java.io.IOException;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class LengthProtocolTestCase extends SocketExtensionTestCase
 {
@@ -23,20 +26,25 @@ public class LengthProtocolTestCase extends SocketExtensionTestCase
     @Rule
     public DynamicPort dynamicPort = new DynamicPort("port1");
 
+    @Rule
+    public ExpectedException expectedException = none();
+
     @Override
     protected String getConfigFile()
     {
         return "length-protocol-config.xml";
     }
 
-    @Test(expected = IOException.class)
-    public void sendLongerMsgShouldReturnNullPayload() throws Exception
+    @Test
+    public void sendLongerMsg() throws Exception
     {
+        expectedException.expect(MessagingException.class);
+        expectedException.expectCause(instanceOf(LengthExceededException.class));
         flowRunner("tcp-send").withPayload(LONG_TEST_STRING).run();
     }
 
     @Test
-    public void sendShorterMsgShouldWork() throws Exception
+    public void sendShorterMsg() throws Exception
     {
         flowRunner("tcp-send").withPayload(SHORT_TEST_STRING).run();
         assertEvent(receiveConnection(), SHORT_TEST_STRING);

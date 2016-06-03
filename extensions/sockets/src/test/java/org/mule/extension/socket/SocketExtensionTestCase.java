@@ -6,16 +6,13 @@
  */
 package org.mule.extension.socket;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.mule.functional.junit4.ExtensionFunctionalTestCase;
 import org.mule.module.socket.api.SocketsExtension;
 import org.mule.module.socket.api.source.SocketAttributes;
 import org.mule.runtime.api.message.MuleMessage;
-import org.mule.runtime.api.message.NullPayload;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.el.context.MessageContext;
@@ -83,11 +80,6 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
         return new Class<?>[] {SocketsExtension.class};
     }
 
-    protected void assertNullPayload(MuleMessage<?, SocketAttributes> message)
-    {
-        assertThat(message.getPayload(), instanceOf(NullPayload.class));
-    }
-
     protected void assertEvent(MuleMessage<?, SocketAttributes> message, Object expectedContent) throws Exception
     {
         String payload = IOUtils.toString((InputStream) message.getPayload());
@@ -104,15 +96,13 @@ public abstract class SocketExtensionTestCase extends ExtensionFunctionalTestCas
         PollingProber prober = new PollingProber(TIMEOUT_MILLIS, POLL_DELAY_MILLIS);
         ValueHolder<MuleMessage<?, SocketAttributes>> messageHolder = new ValueHolder<>();
         prober.check(new JUnitLambdaProbe(() -> {
-            for (MuleMessage<?, SocketAttributes> message : receivedMessages)
+            if (receivedMessages.size() > 0)
             {
-                messageHolder.set(message);
+                messageHolder.set(receivedMessages.remove(0));
                 return true;
             }
-
             return false;
         }));
-
         return messageHolder.get();
     }
 

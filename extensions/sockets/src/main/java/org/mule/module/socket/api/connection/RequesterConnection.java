@@ -7,8 +7,9 @@
 package org.mule.module.socket.api.connection;
 
 import org.mule.module.socket.api.client.SocketClient;
+import org.mule.runtime.api.connection.ConnectionException;
 
 public interface RequesterConnection extends SocketConnection
 {
-   SocketClient getClient();
+   SocketClient getClient() throws ConnectionException;
 }

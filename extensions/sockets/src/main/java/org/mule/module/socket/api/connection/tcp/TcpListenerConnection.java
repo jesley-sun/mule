@@ -96,6 +96,7 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
     {
         try
         {
+            System.out.println("CLOSED");
             serverSocket.close();
         }
         catch (IOException e)

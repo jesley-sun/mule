@@ -29,6 +29,7 @@
     <flow name="tcp-listen">
         <sockets:socket-listener config-ref="tcp-listener"/>
         <flow-ref name="onIncomingConnection"/>
+        <set-payload value="Consumed"/>
     </flow>
 
     <sub-flow name="onIncomingConnection">

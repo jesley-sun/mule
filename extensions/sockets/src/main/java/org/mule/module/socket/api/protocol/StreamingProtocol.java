@@ -19,6 +19,7 @@ public class StreamingProtocol extends EOFProtocol
         super();
     }
 
+    @Override
     public InputStream read(InputStream is) throws IOException
     {
         if (is instanceof TcpInputStream)

@@ -41,7 +41,10 @@ public class SocketOperations
         //try
         //{
             client.write(data);
-            return client.read();
+        System.out.println("WRITE DATA");
+        InputStream read = client.read();
+        System.out.println("READ DATA");
+        return read;
         //}
         //catch (IOException e)
         //{

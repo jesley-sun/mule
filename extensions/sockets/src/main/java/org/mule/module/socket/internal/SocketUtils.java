@@ -39,33 +39,30 @@ public class SocketUtils
 
     private static final int PORT_CHOSEN_BY_SYSTEM = 0;
 
-    public static void write(OutputStream os, Object data, boolean payloadOnly, boolean streamingOk, ObjectSerializer objectSerializer) throws IOException
+    public static void write(OutputStream os, Object data, boolean payloadOnly, ObjectSerializer objectSerializer) throws IOException
     {
-        writeByteArray(os, getByteArray(data, payloadOnly, streamingOk, objectSerializer));
+        writeByteArray(os, getByteArray(data, payloadOnly, objectSerializer));
     }
+
     protected static void writeByteArray(OutputStream os, byte[] data) throws IOException
     {
         os.write(data);
     }
 
-    public static byte[] getByteArray(Object data, boolean payloadOnly, boolean streamingOk, ObjectSerializer objectSerializer) throws IOException
+    public static byte[] getByteArray(Object data, boolean payloadOnly, ObjectSerializer objectSerializer) throws IOException
     {
         if (data instanceof InputStream)
         {
-            if (streamingOk)
-            {
-                return IOUtils.toByteArray((InputStream) data);
-            }
-            else
-            {
-                throw new IOException("Streaming is not allowed");
-            }
+            InputStream is = (InputStream) data;
+            byte[] result = IOUtils.toByteArray((InputStream) data);
+            is.close();
+            return result;
         }
         else if (data instanceof MuleMessage)
         {
             if (payloadOnly)
             {
-                return getByteArray(((MuleMessage) data).getPayload(), streamingOk, payloadOnly, objectSerializer);
+                return getByteArray(((MuleMessage) data).getPayload(), payloadOnly, objectSerializer);
             }
             else
             {
@@ -189,8 +186,7 @@ public class SocketUtils
      */
     public static DatagramPacket createPacket(byte[] content) throws UnresolvableHostException
     {
-        DatagramPacket packet = new DatagramPacket(content, content.length);
-        return packet;
+        return new DatagramPacket(content, content.length);
     }
 
     /**
@@ -203,11 +199,11 @@ public class SocketUtils
         return packet;
     }
 
-    public static  DatagramSocket newSocket(String host, Integer port) throws ConnectionException
+
+    public static DatagramSocket newSocket(String host, Integer port) throws ConnectionException
     {
         try
         {
-            //return new DatagramSocket(port, getSocketAddressbyName(host));
             return new DatagramSocket(getAddress(host, port));
         }
         catch (Exception e)
@@ -216,7 +212,7 @@ public class SocketUtils
         }
     }
 
-    public static  DatagramSocket connectSocket(DatagramSocket socket, String host, int port) throws ConnectionException
+    public static DatagramSocket connectSocket(DatagramSocket socket, String host, int port) throws ConnectionException
     {
         try
         {
@@ -230,7 +226,7 @@ public class SocketUtils
         }
     }
 
-    public static  DatagramSocket connectSocket(DatagramSocket socket, InetAddress address, int port) throws ConnectionException
+    public static DatagramSocket connectSocket(DatagramSocket socket, InetAddress address, int port) throws ConnectionException
     {
         try
         {

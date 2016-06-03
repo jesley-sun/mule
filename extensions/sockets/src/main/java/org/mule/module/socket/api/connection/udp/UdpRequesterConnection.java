@@ -7,12 +7,13 @@
 package org.mule.module.socket.api.connection.udp;
 
 import static org.mule.module.socket.internal.SocketUtils.newSocket;
-import static org.mule.module.socket.internal.SocketUtils.connectSocket;
 import org.mule.module.socket.api.client.SocketClient;
-import org.mule.module.socket.api.client.UdpClient;
+import org.mule.module.socket.api.client.UdpOperationClient;
 import org.mule.module.socket.api.connection.RequesterConnection;
 import org.mule.module.socket.internal.DefaultUdpRequestingSocketProperties;
 import org.mule.runtime.api.connection.ConnectionException;
+
+import java.net.SocketException;
 
 public class UdpRequesterConnection extends AbstractUdpConnection implements RequesterConnection
 {
@@ -30,14 +31,19 @@ public class UdpRequesterConnection extends AbstractUdpConnection implements Req
     {
         socket = newSocket(requestingSocketProperties.getBindingHost(), requestingSocketProperties.getLocalPort());
         configureConnection();
-
-        connectSocket(socket, host, port);
     }
 
     @Override
-    public SocketClient getClient()
+    public SocketClient getClient() throws ConnectionException
     {
-        return new UdpClient(socket, socketProperties, objectSerializer);
+        try
+        {
+            return new UdpOperationClient(host, port, requestingSocketProperties, objectSerializer);
+        }
+        catch (SocketException e)
+        {
+            throw new ConnectionException("Could not create UDP socket", e);
+        }
     }
 
 }

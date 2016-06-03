@@ -6,30 +6,20 @@
        http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd">
 
     <sockets:requester-config name="udp-requester">
-        <sockets:udp-requester-connection host="localhost" port="${port_udp}">
-            <sockets:udp-requesting-socket-properties>
-                <sockets:default-udp-requesting-socket-properties broadcast="false"/>
-            </sockets:udp-requesting-socket-properties>
-        </sockets:udp-requester-connection>
+        <sockets:udp-requester-connection host="localhost" port="${port_udp}"/>
     </sockets:requester-config>
 
     <sockets:listener-config name="udp-listener">
         <sockets:udp-listener-connection host="localhost" port="${port_udp}"/>
     </sockets:listener-config>
 
-    <flow name="udp-send">
+    <flow name="udp-send-and-receive">
         <sockets:send config-ref="udp-requester"/>
     </flow>
 
-    <flow name="udp-listen">
+    <flow name="udp-listen-and-modify-string">
         <sockets:socket-listener config-ref="udp-listener"/>
-        <flow-ref name="onIncomingConnection"/>
-        <set-payload value="Consumed"/>
+        <object-to-string-transformer mimeType="text/plain"/>
+        <set-payload value="#[payload]_modified"/>
     </flow>
-
-    <sub-flow name="onIncomingConnection">
-        <expression-component>org.mule.extension.socket.SocketExtensionTestCase.onIncomingConnection(message)
-        </expression-component>
-    </sub-flow>
-
 </mule>

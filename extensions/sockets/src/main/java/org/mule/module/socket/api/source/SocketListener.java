@@ -75,6 +75,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             {
 
                 SocketClient client = connection.listen();
+                System.out.println("NEW CONNECTION");
 
                 if (isRequestedToStop())
                 {
@@ -91,6 +92,8 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
                     @Override
                     public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback)
                     {
+                        System.out.println("ON COMPLETITON");
+
                         if (isRequestedToStop())
                         {
                             try
@@ -138,8 +141,11 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             catch (Exception e)
             {
                 // keep listening
-                e.printStackTrace();
-                LOGGER.debug(e.getMessage());
+                if (!isRequestedToStop())
+                {
+                    e.printStackTrace();
+                    LOGGER.debug(e.getMessage());
+                }
             }
         }
     }
@@ -148,6 +154,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
     @Override
     public void stop()
     {
+        System.out.println("STOPPED");
         stopRequested.set(true);
         shutdownExecutor();
     }

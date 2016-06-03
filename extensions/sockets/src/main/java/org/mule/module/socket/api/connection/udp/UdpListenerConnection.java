@@ -7,16 +7,17 @@
 package org.mule.module.socket.api.connection.udp;
 
 import static org.mule.module.socket.internal.SocketUtils.createPacket;
-import static org.mule.module.socket.internal.SocketUtils.getAddress;
 import static org.mule.module.socket.internal.SocketUtils.newSocket;
 import org.mule.module.socket.api.client.SocketClient;
-import org.mule.module.socket.api.client.UdpClient;
+import org.mule.module.socket.api.client.UdpSourceClient;
 import org.mule.module.socket.api.connection.ListenerConnection;
+import org.mule.module.socket.api.exceptions.ReadingTimeoutException;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
 import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.SocketTimeoutException;
 
 public class UdpListenerConnection extends AbstractUdpConnection implements ListenerConnection
 {
@@ -37,12 +38,22 @@ public class UdpListenerConnection extends AbstractUdpConnection implements List
     public SocketClient listen() throws IOException, ConnectionException
     {
         DatagramPacket packet = createPacket(socketProperties.getReceiveBufferSize());
-        if (!socket.isBound())
+
+        try
         {
-            socket.bind(getAddress(host, port));
+            socket.receive(packet);
         }
-        socket.receive(packet);
-        return new UdpClient(packet, socketProperties, objectSerializer);
+        catch (SocketTimeoutException e)
+        {
+            throw new ReadingTimeoutException("UDP Source timed out while awaiting for new packages", e);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return new UdpSourceClient(packet, socketProperties, objectSerializer);
     }
 
 }
