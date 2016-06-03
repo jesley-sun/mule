@@ -6,7 +6,6 @@
  */
 package org.mule.extension.email.api.retriever;
 
-import org.mule.extension.email.api.AbstractEmailProvider;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.runtime.ConfigurationProvider;
@@ -16,7 +15,7 @@ import org.mule.runtime.extension.api.runtime.ConfigurationProvider;
  *
  * @since 4.0
  */
-public abstract class AbstractRetrieverProvider extends AbstractEmailProvider
+public abstract class AbstractRetrieverProvider
 {
 
     /**
@@ -31,4 +30,5 @@ public abstract class AbstractRetrieverProvider extends AbstractEmailProvider
     @Parameter
     @Password
     protected String password;
+
 }

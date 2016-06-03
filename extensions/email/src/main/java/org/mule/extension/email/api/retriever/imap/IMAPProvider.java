@@ -6,7 +6,6 @@
  */
 package org.mule.extension.email.api.retriever.imap;
 
-import static org.mule.extension.email.internal.util.EmailConstants.PORT_IMAP;
 import static org.mule.extension.email.internal.util.EmailConstants.PROTOCOL_IMAP;
 import org.mule.extension.email.api.retriever.AbstractRetrieverProvider;
 import org.mule.extension.email.api.retriever.RetrieverConnection;
@@ -16,8 +15,6 @@ import org.mule.runtime.api.connection.ConnectionHandlingStrategyFactory;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.extension.api.annotation.Alias;
-import org.mule.runtime.extension.api.annotation.Parameter;
-import org.mule.runtime.extension.api.annotation.param.Optional;
 
 /**
  * A {@link ConnectionProvider} that returns instances of imap based {@link RetrieverConnection}s.
@@ -25,15 +22,8 @@ import org.mule.runtime.extension.api.annotation.param.Optional;
  * @since 4.0
  */
 @Alias("imap")
-public class IMAPConnectionProvider extends AbstractRetrieverProvider implements ConnectionProvider<IMAPConfiguration, RetrieverConnection>
+public class IMAPProvider extends AbstractRetrieverProvider implements ConnectionProvider<IMAPConfiguration, RetrieverConnection>
 {
-
-    /**
-     * The port number of the mail server. The default value for imap mail servers is 143.
-     */
-    @Parameter
-    @Optional(defaultValue = PORT_IMAP)
-    private String port;
 
     /**
      * {@inheritDoc}
@@ -41,7 +31,16 @@ public class IMAPConnectionProvider extends AbstractRetrieverProvider implements
     @Override
     public RetrieverConnection connect(IMAPConfiguration config) throws ConnectionException
     {
-        return new RetrieverConnection(PROTOCOL_IMAP, user, password, host, port, connectionTimeout, readTimeout, writeTimeout, properties, null, config.getFolder());
+        return new RetrieverConnection(PROTOCOL_IMAP,
+                                       user,
+                                       password,
+                                       config.getHost(),
+                                       config.getPort(),
+                                       config.getConnectionTimeout(),
+                                       config.getReadTimeout(),
+                                       config.getWriteTimeout(),
+                                       config.getProperties(),
+                                       config.getFolder());
     }
 
     /**
