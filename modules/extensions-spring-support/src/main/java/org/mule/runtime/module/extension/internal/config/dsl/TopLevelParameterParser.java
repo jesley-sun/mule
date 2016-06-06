@@ -14,11 +14,10 @@ import org.mule.metadata.api.model.MetadataType;
 import org.mule.metadata.api.model.ObjectFieldType;
 import org.mule.metadata.api.model.ObjectType;
 import org.mule.metadata.api.visitor.MetadataTypeVisitor;
-import org.mule.runtime.config.spring.dsl.api.ComponentBuildingDefinition;
 import org.mule.runtime.config.spring.dsl.api.ComponentBuildingDefinition.Builder;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 
-final class TopLevelParameterParser extends AbstractDefinitionProvider
+final class TopLevelParameterParser extends AbstractDefinitionParser
 {
 
     private final ObjectType type;
@@ -30,9 +29,9 @@ final class TopLevelParameterParser extends AbstractDefinitionProvider
     }
 
     @Override
-    public ComponentBuildingDefinition parse()
+    protected void doParse(Builder definition)
     {
-        Builder definitionBuilder = definition.withIdentifier(hyphenize(getTopLevelTypeName(type)))
+        definition.withIdentifier(hyphenize(getTopLevelTypeName(type)))
                 .withTypeDefinition(fromType(ValueResolver.class))
                 .withObjectFactoryType(TopLevelParameterObjectFactory.class)
                 .withSetterParameterDefinition("type", fromFixedValue(type).build());
@@ -48,17 +47,15 @@ final class TopLevelParameterParser extends AbstractDefinitionProvider
                 @Override
                 protected void defaultVisit(MetadataType metadataType)
                 {
-                    addResolver(definitionBuilder, parseSimpleParameter(parameterName, metadataType, null));
+                    parseAttributeParameter(parameterName, metadataType, null);
                 }
 
                 @Override
                 public void visitObject(ObjectType objectType)
                 {
-                    //addResolver(definitionBuilder, fromChildConfiguration(getType(objectType)).build());
+                    parsePojoParameter(parameterName, objectType, null);
                 }
             });
         }
-
-        return definitionBuilder.build();
     }
 }

@@ -6,31 +6,23 @@
  */
 package org.mule.runtime.module.extension.internal.config.dsl;
 
-import org.mule.metadata.api.model.MetadataType;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 
 public class ParsedParameter
 {
 
     private final String name;
-    private final MetadataType type;
     private final ValueResolver<?> resolver;
 
-    public ParsedParameter(String name, MetadataType type, ValueResolver<?> resolver)
+    public ParsedParameter(String name, ValueResolver<?> resolver)
     {
         this.name = name;
-        this.type = type;
         this.resolver = resolver;
     }
 
     public String getName()
     {
         return name;
-    }
-
-    public MetadataType getType()
-    {
-        return type;
     }
 
     public ValueResolver<?> getResolver()

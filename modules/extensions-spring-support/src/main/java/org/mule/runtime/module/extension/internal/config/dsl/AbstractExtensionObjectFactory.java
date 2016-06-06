@@ -6,25 +6,54 @@
  */
 package org.mule.runtime.module.extension.internal.config.dsl;
 
+import static org.mule.runtime.module.extension.internal.util.NameUtils.camel;
+import static org.mule.runtime.module.extension.internal.util.NameUtils.hyphenize;
 import org.mule.runtime.config.spring.dsl.api.ObjectFactory;
+import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
+import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractExtensionObjectFactory<T> implements ObjectFactory<T>
 {
 
-    private List<ParsedParameter> parsedParameters = new LinkedList<>();
+    private Map<String, ValueResolver<?>> parameters = new HashMap<>();
 
-
-    public void setResolver(ParsedParameter parsedParameter)
+    protected Map<String, ValueResolver<?>> getParameters()
     {
-        parsedParameters.add(parsedParameter);
+        validateParameters();
+        return parameters;
     }
 
-
-    protected List<ParsedParameter> getParsedParameters()
+    public void setParameters(Map<String, ValueResolver<?>> parameters)
     {
-        return parsedParameters;
+        this.parameters = parameters;
+    }
+
+    protected ResolverSet getParametersAsResolverSet()
+    {
+        ResolverSet resolverSet = new ResolverSet();
+        getParameters().forEach((key, valueResolver) -> resolverSet.add(key, valueResolver));
+
+        return resolverSet;
+    }
+
+    private void validateParameters()
+    {
+        parameters.keySet().stream()
+                .filter(key -> {
+                    if (key.contains("-") && parameters.containsKey(camel(key)))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return parameters.containsKey(hyphenize(key));
+                    }
+                }).findFirst()
+                .ifPresent(parameter -> {
+                    throw new IllegalArgumentException(String.format("Parameter '%s' was specified as an attribute and as a child element at the same time. "));
+                });
     }
 }

@@ -27,11 +27,11 @@ public class TopLevelParameterObjectFactory extends AbstractExtensionObjectFacto
         final Class<Object> objectClass = getType(type);
         final ObjectBuilder builder = new DefaultObjectBuilder(objectClass);
 
-        getParsedParameters().forEach(parameter -> {
-            Field field = getFieldByAlias(objectClass, parameter.getName(), getType(parameter.getType()));
+        getParameters().forEach((key, value) -> {
+            Field field = getFieldByAlias(objectClass, key);
             if (field != null)
             {
-                builder.addPropertyResolver(field, parameter.getResolver());
+                builder.addPropertyResolver(field, value);
             }
         });
 

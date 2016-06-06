@@ -27,6 +27,7 @@ import org.mule.runtime.extension.api.BaseExtensionWalker;
 import org.mule.runtime.extension.api.ExtensionManager;
 import org.mule.runtime.extension.api.introspection.ExtensionModel;
 import org.mule.runtime.extension.api.introspection.config.ConfigurationModel;
+import org.mule.runtime.extension.api.introspection.config.RuntimeConfigurationModel;
 import org.mule.runtime.extension.api.introspection.connection.ConnectionProviderModel;
 import org.mule.runtime.extension.api.introspection.connection.HasConnectionProviderModels;
 import org.mule.runtime.extension.api.introspection.operation.HasOperationModels;
@@ -38,6 +39,7 @@ import org.mule.runtime.extension.api.introspection.property.XmlModelProperty;
 import org.mule.runtime.extension.api.introspection.source.HasSourceModels;
 import org.mule.runtime.extension.api.introspection.source.SourceModel;
 import org.mule.runtime.module.extension.internal.config.ExtensionConfig;
+import org.mule.runtime.module.extension.internal.config.dsl.config.ConfigurationDefinitionParser;
 import org.mule.runtime.module.extension.internal.introspection.SubTypesMappingContainer;
 
 import com.google.common.collect.HashMultimap;
@@ -62,6 +64,7 @@ public class ExtensionBuildingDefinitionProvider implements ComponentBuildingDef
     private final Multimap<ExtensionModel, String> topLevelParameters = HashMultimap.create();
     private final Map<String, BeanDefinitionParser> parsers = new HashMap<>();
     private ExtensionManager extensionManager;
+    private MuleContext muleContext;
 
     /**
      * Attempts to get a hold on a {@link ExtensionManager}
@@ -72,6 +75,7 @@ public class ExtensionBuildingDefinitionProvider implements ComponentBuildingDef
     @Override
     public void init(MuleContext muleContext)
     {
+        this.muleContext = muleContext;
         extensionManager = muleContext.getExtensionManager();
         checkState(extensionManager != null, "Could not obtain the ExtensionManager");
 
@@ -119,7 +123,7 @@ public class ExtensionBuildingDefinitionProvider implements ComponentBuildingDef
                 @Override
                 public void onConfiguration(ConfigurationModel model)
                 {
-                    //definitions.addAll(new ConfigurationDefinitionProvider(definition).parse());
+                    definitions.add(new ConfigurationDefinitionParser(definition, (RuntimeConfigurationModel) model, muleContext).parse());
                 }
 
                 @Override
@@ -130,6 +134,7 @@ public class ExtensionBuildingDefinitionProvider implements ComponentBuildingDef
                 @Override
                 public void onConnectionProvider(HasConnectionProviderModels owner, ConnectionProviderModel model)
                 {
+
                 }
 
                 @Override

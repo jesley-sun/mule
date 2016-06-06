@@ -59,7 +59,7 @@ class ComponentConfigurationBuilder
         this.componentModel = componentModel;
         this.componentBuildingDefinition = componentBuildingDefinition;
         this.beanDefinitionBuilderHelper = beanDefinitionBuilderHelper;
-        this.simpleParameters = new HashMap(componentModel.getParameters());
+        this.simpleParameters = new HashMap<>(componentModel.getParameters());
         this.complexParameters = collectComplexParametersWithTypes(componentModel);
     }
 

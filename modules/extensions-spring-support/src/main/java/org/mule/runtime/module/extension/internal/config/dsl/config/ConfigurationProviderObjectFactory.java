@@ -6,83 +6,84 @@
  */
 package org.mule.runtime.module.extension.internal.config.dsl.config;
 
+import static java.util.Optional.empty;
 import org.mule.runtime.api.connection.ConnectionProvider;
-import org.mule.runtime.config.spring.dsl.api.ObjectFactory;
 import org.mule.runtime.core.api.MuleContext;
-import org.mule.runtime.core.api.config.ConfigurationException;
-import org.mule.runtime.core.time.TimeSupplier;
-import org.mule.runtime.extension.api.introspection.ExtensionModel;
 import org.mule.runtime.extension.api.introspection.config.RuntimeConfigurationModel;
 import org.mule.runtime.extension.api.runtime.ConfigurationProvider;
+import org.mule.runtime.module.extension.internal.config.dsl.AbstractExtensionObjectFactory;
 import org.mule.runtime.module.extension.internal.runtime.DynamicConfigPolicy;
 import org.mule.runtime.module.extension.internal.runtime.config.ConfigurationProviderFactory;
 import org.mule.runtime.module.extension.internal.runtime.config.DefaultConfigurationProviderFactory;
+import org.mule.runtime.module.extension.internal.runtime.resolver.ResolverSet;
 import org.mule.runtime.module.extension.internal.runtime.resolver.ValueResolver;
 
-final class ConfigurationProviderObjectFactory implements ObjectFactory<ConfigurationProvider>
+import java.util.Optional;
+
+final class ConfigurationProviderObjectFactory extends AbstractExtensionObjectFactory<ConfigurationProvider<Object>>
 {
+
     private final String name;
-    private final ExtensionModel extensionModel;
     private final RuntimeConfigurationModel configurationModel;
     private final ConfigurationProviderFactory configurationProviderFactory = new DefaultConfigurationProviderFactory();
-    private final TimeSupplier timeSupplier;
-    private final ValueResolver<ConnectionProvider> connectionProviderResolver;
     private final MuleContext muleContext;
+
     private DynamicConfigPolicy dynamicConfigPolicy;
+    private Optional<ValueResolver<ConnectionProvider>> connectionProviderResolver = empty();
 
     ConfigurationProviderObjectFactory(String name,
-                                     RuntimeConfigurationModel configurationModel,
-                                     MuleContext muleContext,
-                                     TimeSupplier timeSupplier,
-                                     ValueResolver<ConnectionProvider> connectionProviderResolver) throws ConfigurationException
+                                       RuntimeConfigurationModel configurationModel,
+                                       MuleContext muleContext)
     {
         this.name = name;
         this.configurationModel = configurationModel;
-        this.connectionProviderResolver = connectionProviderResolver;
-        this.timeSupplier = timeSupplier;
         this.muleContext = muleContext;
-        this.extensionModel = configurationModel.getExtensionModel();
     }
 
     @Override
     public ConfigurationProvider<Object> getObject() throws Exception
     {
-        //ResolverSet resolverSet = parserDelegate.getResolverSet(element, configurationModel.getParameterModels());
-        //ConfigurationProvider<Object> configurationProvider;
-        //try
-        //{
-        //    if (resolverSet.isDynamic() || connectionProviderResolver.isDynamic())
-        //    {
-        //        configurationProvider = configurationProviderFactory.createDynamicConfigurationProvider(
-        //                name,
-        //                configurationModel,
-        //                resolverSet,
-        //                connectionProviderResolver,
-        //                getDynamicConfigPolicy(element));
-        //    }
-        //    else
-        //    {
-        //        configurationProvider = configurationProviderFactory.createStaticConfigurationProvider(
-        //                name,
-        //                configurationModel,
-        //                resolverSet,
-        //                connectionProviderResolver,
-        //                muleContext);
-        //    }
-        //
-        //    muleContext.getInjector().inject(configurationProvider);
-        //}
-        //catch (Exception e)
-        //{
-        //    throw new RuntimeException(e);
-        //}
-        //return configurationProvider;
 
-        return null;
+        ResolverSet resolverSet = getParametersAsResolverSet();
+        ConfigurationProvider<Object> configurationProvider;
+        try
+        {
+            if (resolverSet.isDynamic() /*|| connectionProviderResolver.isDynamic()*/)
+            {
+                configurationProvider = configurationProviderFactory.createDynamicConfigurationProvider(
+                        name,
+                        configurationModel,
+                        resolverSet,
+                        connectionProviderResolver,
+                        dynamicConfigPolicy);
+            }
+            else
+            {
+                configurationProvider = configurationProviderFactory.createStaticConfigurationProvider(
+                        name,
+                        configurationModel,
+                        resolverSet,
+                        connectionProviderResolver,
+                        muleContext);
+            }
+
+            muleContext.getInjector().inject(configurationProvider);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        return configurationProvider;
+
     }
 
     public void setDynamicConfigPolicy(DynamicConfigPolicy dynamicConfigPolicy)
     {
         this.dynamicConfigPolicy = dynamicConfigPolicy;
+    }
+
+    public void setConnectionProviderResolver(Optional<ValueResolver<ConnectionProvider>> connectionProviderResolver)
+    {
+        this.connectionProviderResolver = connectionProviderResolver;
     }
 }

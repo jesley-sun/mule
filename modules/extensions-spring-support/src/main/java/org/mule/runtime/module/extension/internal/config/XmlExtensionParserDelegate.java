@@ -678,7 +678,7 @@ final class XmlExtensionParserDelegate
 
             if (resolver != null)
             {
-                Field field = IntrospectionUtils.getFieldByAlias(objectClass, parameterName, getType(fieldType));
+                Field field = IntrospectionUtils.getFieldByAlias(objectClass, parameterName);
                 if (field != null)
                 {
                     builder.addPropertyResolver(field, resolver);

@@ -13,9 +13,9 @@
     <context:property-placeholder location="heisenberg.properties"/>
 
     <heisenberg:door victim="Gustavo Fring" address="pollos hermanos" name="door">
-        <!--<heisenberg:previous>-->
-            <!--<heisenberg:door victim="Krazy-8" address="Jesse's"/>-->
-        <!--</heisenberg:previous>-->
+        <heisenberg:previous>
+            <heisenberg:door victim="Krazy-8" address="Jesse's"/>
+        </heisenberg:previous>
     </heisenberg:door>
 
     <!--<heisenberg:ricin microgramsPerKilo="22" name="ricin">-->
