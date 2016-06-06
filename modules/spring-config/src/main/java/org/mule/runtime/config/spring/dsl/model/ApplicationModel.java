@@ -207,7 +207,7 @@ public class ApplicationModel
 
     private boolean isSpringFile(ConfigFile configFile)
     {
-        return configFile.getConfigLines().get(0).getIdentifier().equals(ApplicationModel.SPRING_NAMESPACE);
+        return SPRING_NAMESPACE.equals(configFile.getConfigLines().get(0).getNamespace());
     }
 
     private void validateModel() throws ConfigurationException

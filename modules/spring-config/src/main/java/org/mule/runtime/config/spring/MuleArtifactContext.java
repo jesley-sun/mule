@@ -20,6 +20,7 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.REQUI
 import org.mule.runtime.config.spring.dsl.api.ComponentBuildingDefinitionProvider;
 import org.mule.runtime.config.spring.dsl.model.ApplicationModel;
 import org.mule.runtime.config.spring.dsl.model.ComponentBuildingDefinitionRegistry;
+import org.mule.runtime.config.spring.dsl.model.ComponentIdentifier;
 import org.mule.runtime.config.spring.dsl.model.ComponentModel;
 import org.mule.runtime.config.spring.dsl.processor.ApplicationConfig;
 import org.mule.runtime.config.spring.dsl.processor.ConfigFile;
@@ -152,7 +153,11 @@ public class MuleArtifactContext extends AbstractXmlApplicationContext
             @Override
             public void consume(ComponentModel componentModel) throws MuleRuntimeException
             {
-                if (!beanDefinitionFactory.hasDefinition(componentModel.getIdentifier(), ofNullable(componentModel.getParent().getIdentifier())))
+                Optional<ComponentIdentifier> parentIdentifierOptional = ofNullable(componentModel.getParent())
+                        .flatMap(parentComponentModel -> {
+                            return Optional.ofNullable(parentComponentModel.getIdentifier());
+                        });
+                if (!beanDefinitionFactory.hasDefinition(componentModel.getIdentifier(), parentIdentifierOptional))
                 {
                     useNewParsingMechanism = false;
                 }
