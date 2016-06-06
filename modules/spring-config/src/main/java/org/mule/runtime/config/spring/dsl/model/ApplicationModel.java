@@ -6,11 +6,12 @@
  */
 package org.mule.runtime.config.spring.dsl.model;
 
+import static java.lang.String.format;
+import static java.util.Optional.empty;
 import static org.mule.runtime.config.spring.dsl.processor.xml.CoreXmlNamespaceInfoProvider.CORE_NAMESPACE_NAME;
 import static org.mule.runtime.config.spring.dsl.processor.xml.XmlCustomAttributeHandler.from;
 import static org.mule.runtime.config.spring.dsl.processor.xml.XmlCustomAttributeHandler.to;
 import static org.mule.runtime.core.config.i18n.MessageFactory.createStaticMessage;
-
 import org.mule.runtime.config.spring.dsl.processor.ApplicationConfig;
 import org.mule.runtime.config.spring.dsl.processor.ConfigFile;
 import org.mule.runtime.config.spring.dsl.processor.ConfigLine;
@@ -25,17 +26,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.springframework.util.PropertyPlaceholderHelper;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
  * An {@code ApplicationModel} holds a representation of all the artifact configuration using an abstract model
  * to represent any configuration option.
- *
+ * <p/>
  * This model is represented by a set of {@link org.mule.runtime.config.spring.dsl.model.ComponentModel}. Each {@code ComponentModel}
  * holds a piece of configuration and may have children {@code ComponentModel}s as defined in the artifact configuration.
- *
+ * <p/>
  * Once the set of {@code ComponentModel} gets created from the application {@link org.mule.runtime.config.spring.dsl.processor.ConfigFile}s
  * the {@code ApplicationModel} executes a set of common validations dictated by the configuration semantics.
  *
@@ -66,6 +69,7 @@ public class ApplicationModel
     public static final String FILTER_ELEMENT_SUFFIX = "-filter";
     public static final String PROCESSING_STRATEGY_ATTRIBUTE = "processingStrategy";
     public static final String QUEUE_STORE = "queue-store";
+    public static final String CONFIGURATION_ELEMENT = "configuration";
 
     //TODO MULE-9638 Remove once all bean definitions parsers where migrated
     public static final String TEST_NAMESPACE = "test";
@@ -94,6 +98,7 @@ public class ApplicationModel
     public static final ComponentIdentifier PROCESSOR_IDENTIFIER = new ComponentIdentifier.Builder().withNamespace(CORE_NAMESPACE_NAME).withName(PROCESSOR_REFERENCE_ELEMENT).build();
     public static final ComponentIdentifier TRANSFORMER_IDENTIFIER = new ComponentIdentifier.Builder().withNamespace(CORE_NAMESPACE_NAME).withName(TRANSFORMER_REFERENCE_ELEMENT).build();
     public static final ComponentIdentifier QUEUE_STORE_IDENTIFIER = new ComponentIdentifier.Builder().withNamespace(CORE_NAMESPACE_NAME).withName(QUEUE_STORE).build();
+    public static final ComponentIdentifier CONFIGURATION_IDENTIFIER = new ComponentIdentifier.Builder().withNamespace(CORE_NAMESPACE_NAME).withName(CONFIGURATION_ELEMENT).build();
 
     private static ImmutableSet<ComponentIdentifier> ignoredNameValidationComponentList = ImmutableSet.<ComponentIdentifier>builder()
             .add(new ComponentIdentifier.Builder().withNamespace(MULE_ROOT_ELEMENT).withName("flow-ref").build())
@@ -144,10 +149,12 @@ public class ApplicationModel
             .build();
 
     private List<ComponentModel> componentModels = new ArrayList<>();
+    private PropertyPlaceholderHelper propertyPlaceholderHelper = new PropertyPlaceholderHelper("${", "}");
+    private SystemPropertyPlaceholderResolver systemPropertyPlaceholderResolver = new SystemPropertyPlaceholderResolver("mule config property resolver");
 
     /**
      * Creates an {code ApplicationModel} from a {@link ApplicationConfig}.
-     *
+     * <p/>
      * A set of validations are applied that may make creation fail.
      *
      * @param applicationConfig the mule artifact configuration content.
@@ -167,6 +174,19 @@ public class ApplicationModel
     public ComponentModel findComponentDefinitionModel(Element element)
     {
         return innerFindComponentDefinitionModel(element, componentModels);
+    }
+
+    public Optional<ComponentModel> findComponentDefinitionModel(ComponentIdentifier componentIdentifier)
+    {
+        if (componentModels.isEmpty())
+        {
+            return empty();
+        }
+        return componentModels.get(0).getInnerComponents().stream()
+                .filter(ComponentModel::isRoot)
+                .filter( componentModel -> {
+                    return componentModel.getIdentifier().equals(componentIdentifier);
+                }).findFirst();
     }
 
     private void convertConfigFileToComponentModel(ApplicationConfig applicationConfig)
@@ -200,12 +220,26 @@ public class ApplicationModel
         validateNameIsOnlyOnTopLevelElements();
         validateExceptionStrategyWhenAttributeIsOnlyPresentInsideChoice();
         validateChoiceExceptionStrategyStructure();
+        validateNoDefaultExceptionStrategyAsGlobal();
+    }
+
+    private void validateNoDefaultExceptionStrategyAsGlobal()
+    {
+        executeOnEveryMuleComponentTree(componentModel -> {
+            if (componentModel.isRoot() && DEFAULT_ES_ELEMENT_IDENTIFIER.equals(componentModel.getIdentifier()))
+            {
+                if (componentModel.getNameAttribute() != null)
+                {
+                    throw new MuleRuntimeException(createStaticMessage(format("Component %s is not supported as global", DEFAULT_ES_ELEMENT_IDENTIFIER.getName())));
+                }
+            }
+        });
     }
 
     private void validateNameIsNotRepeated()
     {
         Map<String, ComponentModel> existingObjectsWithName = new HashMap<>();
-        executeOnEveryComponentTree(componentModel -> {
+        executeOnEveryMuleComponentTree(componentModel -> {
             String nameAttributeValue = componentModel.getNameAttribute();
             if (nameAttributeValue != null && !ignoredNameValidationComponentList.contains(componentModel.getIdentifier()))
             {
@@ -227,7 +261,7 @@ public class ApplicationModel
 
     private void validateChoiceExceptionStrategyStructure()
     {
-        executeOnEveryComponentTree(component -> {
+        executeOnEveryMuleComponentTree(component -> {
             if (component.getIdentifier().equals(CHOICE_EXCEPTION_STRATEGY_IDENTIFIER))
             {
                 validateExceptionStrategiesHaveWhenAttribute(component);
@@ -260,7 +294,7 @@ public class ApplicationModel
 
     private void validateExceptionStrategyWhenAttributeIsOnlyPresentInsideChoice()
     {
-        executeOnEveryComponentTree(component -> {
+        executeOnEveryMuleComponentTree(component -> {
             if (component.getIdentifier().getName().endsWith(EXCEPTION_STRATEGY_REFERENCE_ELEMENT))
             {
                 Node componentNode = from(component).getNode();
@@ -286,7 +320,7 @@ public class ApplicationModel
                         {
                             throw new MuleRuntimeException(createStaticMessage("Only top level elements can have a name attribute. Component %s has attribute name with value %s", component.getIdentifier(), component.getNameAttribute()));
                         }
-                    });
+                    }, true);
                 }));
 
             });
@@ -302,23 +336,31 @@ public class ApplicationModel
         return !componentModel.getIdentifier().getNamespace().equals(ApplicationModel.SPRING_NAMESPACE);
     }
 
-    private void executeOnEveryComponentTree(final ComponentConsumer task)
+    public void executeOnEveryComponentTree(final ComponentConsumer task)
     {
         for (ComponentModel componentModel : componentModels)
         {
-            executeOnComponentTree(componentModel, task);
+            executeOnComponentTree(componentModel, task, false);
         }
     }
 
-    private void executeOnComponentTree(final ComponentModel component, final ComponentConsumer task) throws MuleRuntimeException
+    public void executeOnEveryMuleComponentTree(final ComponentConsumer task)
     {
-        if (component.getIdentifier().getNamespace().equals(SPRING_NAMESPACE))
+        for (ComponentModel componentModel : componentModels)
+        {
+            executeOnComponentTree(componentModel, task, true);
+        }
+    }
+
+    private void executeOnComponentTree(final ComponentModel component, final ComponentConsumer task, boolean avoidSpringElements) throws MuleRuntimeException
+    {
+        if (component.getIdentifier().getNamespace().equals(SPRING_NAMESPACE) && avoidSpringElements)
         {
             //TODO MULE-9648: for now do no process beans inside spring
             return;
         }
         component.getInnerComponents().forEach((innerComponent) -> {
-            executeOnComponentTree(innerComponent, task);
+            executeOnComponentTree(innerComponent, task, avoidSpringElements);
         });
         task.consume(component);
     }
@@ -338,13 +380,13 @@ public class ApplicationModel
             to(builder).addNode(from(configLine).getNode()).addConfigFileName(configFileName);
             for (SimpleConfigAttribute simpleConfigAttribute : configLine.getConfigAttributes().values())
             {
-                builder.addParameter(simpleConfigAttribute.getName(), simpleConfigAttribute.getValue());
+                builder.addParameter(simpleConfigAttribute.getName(), resolveValueIfIsPlaceHolder(simpleConfigAttribute.getValue()));
             }
             List<ComponentModel> componentModels = extractComponentDefinitionModel(configLine.getChildren(), configFileName);
             componentModels.stream().forEach(componentDefinitionModel -> {
                 if (SPRING_PROPERTY_IDENTIFIER.equals(componentDefinitionModel.getIdentifier()))
                 {
-                    builder.addParameter(componentDefinitionModel.getNameAttribute(), componentDefinitionModel.getParameters().get("value"));
+                    builder.addParameter(componentDefinitionModel.getNameAttribute(), resolveValueIfIsPlaceHolder(componentDefinitionModel.getParameters().get("value")));
                 }
                 builder.addChildComponentModel(componentDefinitionModel);
             });
@@ -361,6 +403,11 @@ public class ApplicationModel
             models.add(componentModel);
         }
         return models;
+    }
+
+    private String resolveValueIfIsPlaceHolder(String value)
+    {
+        return propertyPlaceholderHelper.replacePlaceholders(value, systemPropertyPlaceholderResolver);
     }
 
     private boolean isConfigurationTopComponent(ConfigLine parent)
@@ -386,12 +433,52 @@ public class ApplicationModel
     }
 
     /**
+     * TODO MULE-9688: When the model it's made immutable we will also provide the parent component for navigation and this will not be needed anymore.
+     * @return the root component model
+     */
+    public ComponentModel getRootComponentModel()
+    {
+        return componentModels.get(0);
+    }
+
+    /**
      * Functional interface to process a component.
      */
     @FunctionalInterface
-    interface ComponentConsumer
+    public interface ComponentConsumer
     {
 
         void consume(ComponentModel componentModel) throws MuleRuntimeException;
+    }
+
+    /**
+     * PlaceholderResolver implementation that resolves against system properties
+     * and system environment variables.
+     * //TODO MULE-9825: add proper support for property placeholders
+     */
+    private static class SystemPropertyPlaceholderResolver implements PropertyPlaceholderHelper.PlaceholderResolver {
+
+        private final String text;
+
+        public SystemPropertyPlaceholderResolver(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String resolvePlaceholder(String placeholderName) {
+            try {
+                String propVal = System.getProperty(placeholderName);
+                if (propVal == null) {
+                    // Fall back to searching the system environment.
+                    propVal = System.getenv(placeholderName);
+                }
+                return propVal;
+            }
+            catch (Throwable ex) {
+                System.err.println("Could not resolve placeholder '" + placeholderName + "' in [" +
+                                   this.text + "] as system property: " + ex);
+                return null;
+            }
+        }
     }
 }
