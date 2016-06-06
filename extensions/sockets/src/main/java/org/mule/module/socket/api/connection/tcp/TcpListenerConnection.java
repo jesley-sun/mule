@@ -6,11 +6,11 @@
  */
 package org.mule.module.socket.api.connection.tcp;
 
-import org.mule.module.socket.api.client.SocketClient;
-import org.mule.module.socket.api.client.TcpClient;
 import org.mule.module.socket.api.connection.ListenerConnection;
 import org.mule.module.socket.api.protocol.TcpProtocol;
 import org.mule.module.socket.api.tcp.TcpServerSocketProperties;
+import org.mule.module.socket.api.worker.SocketWorker;
+import org.mule.module.socket.api.worker.tcp.TcpWorker;
 import org.mule.module.socket.internal.SocketUtils;
 import org.mule.runtime.api.connection.ConnectionException;
 
@@ -74,7 +74,7 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
             LOGGER.debug(e.getMessage());
             if (serverSocket.isClosed())
             {
-                LOGGER.debug("TCP listener socket has been closed");
+                LOGGER.error("TCP listener socket has been closed");
                 throw new ConnectionException("An error occurred while listening for new TCP connections", e);
             }
             throw e;
@@ -82,13 +82,14 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
     }
 
     @Override
-    public SocketClient listen() throws IOException, ConnectionException
+    public SocketWorker listen() throws IOException, ConnectionException
     {
         Socket newConnection = acceptConnection();
         configureIncomingConnection(newConnection);
         //TODO this is a temporary fix until lifecycle in connections for sources is fixed
         protocol.setObjectSerializer(objectSerializer);
-        return new TcpClient(newConnection, protocol);
+        //return new TcpClient(newConnection, protocol);
+        return new TcpWorker(newConnection, protocol);
     }
 
     @Override
@@ -96,7 +97,7 @@ public final class TcpListenerConnection extends AbstractTcpConnection implement
     {
         try
         {
-            System.out.println("CLOSED");
+            LOGGER.error("CLOSED");
             serverSocket.close();
         }
         catch (IOException e)

@@ -6,21 +6,28 @@
  */
 package org.mule.module.socket.api.connection.udp;
 
+import static org.mule.module.socket.internal.SocketUtils.configureConnection;
 import static org.mule.module.socket.internal.SocketUtils.createPacket;
 import static org.mule.module.socket.internal.SocketUtils.newSocket;
-import org.mule.module.socket.api.client.SocketClient;
-import org.mule.module.socket.api.client.UdpSourceClient;
 import org.mule.module.socket.api.connection.ListenerConnection;
 import org.mule.module.socket.api.exceptions.ReadingTimeoutException;
 import org.mule.module.socket.api.udp.UdpSocketProperties;
+import org.mule.module.socket.api.worker.SocketWorker;
 import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UdpListenerConnection extends AbstractUdpConnection implements ListenerConnection
 {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UdpListenerConnection.class);
+
 
     public UdpListenerConnection(UdpSocketProperties socketProperties, String host, Integer port) throws ConnectionException
     {
@@ -31,11 +38,11 @@ public class UdpListenerConnection extends AbstractUdpConnection implements List
     public void connect() throws ConnectionException
     {
         socket = newSocket(host, port);
-        configureConnection();
+        configureConnection(socket, socketProperties);
     }
 
     @Override
-    public SocketClient listen() throws IOException, ConnectionException
+    public SocketWorker listen() throws IOException, ConnectionException
     {
         DatagramPacket packet = createPacket(socketProperties.getReceiveBufferSize());
 
@@ -49,11 +56,19 @@ public class UdpListenerConnection extends AbstractUdpConnection implements List
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            if (socket.isClosed())
+            {
+                LOGGER.debug("UDP listener socket has been closed");
+                throw new ConnectionException("An error occurred while listening for new UDP packets", e);
+            }
+
             throw e;
         }
 
-        return new UdpSourceClient(packet, socketProperties, objectSerializer);
+        DatagramSocket newConnection = new DatagramSocket();
+        configureConnection(newConnection, socketProperties);
+        //todo  fix udp
+        return null;//new UdpSourceClient(newConnection, packet, socketProperties, objectSerializer);
     }
 
 }

@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 public class UdpOperationClient extends AbstractUdpClient implements SocketClient
@@ -31,11 +30,11 @@ public class UdpOperationClient extends AbstractUdpClient implements SocketClien
     private SocketAddress socketAddress;
     private final DefaultUdpRequestingSocketProperties socketProperties;
 
-    public UdpOperationClient(String host, int port, DefaultUdpRequestingSocketProperties socketProperties, ObjectSerializer objectSerializer) throws SocketException
+    public UdpOperationClient(DatagramSocket socket, String host, int port, DefaultUdpRequestingSocketProperties socketProperties, ObjectSerializer objectSerializer)
     {
         super(objectSerializer);
         this.socketProperties = socketProperties;
-        this.socket = new DatagramSocket(getAddress(socketProperties.getBindingHost(), socketProperties.getLocalPort()));
+        this.socket = socket;
         this.socketAddress = getAddress(host, port);
     }
 

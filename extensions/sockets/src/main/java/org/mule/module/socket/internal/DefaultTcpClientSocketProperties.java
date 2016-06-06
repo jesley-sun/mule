@@ -55,5 +55,4 @@ public class DefaultTcpClientSocketProperties extends AbstractTcpSocketPropertie
     {
         return bindingHost;
     }
-
 }

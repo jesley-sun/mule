@@ -22,10 +22,4 @@ public interface UdpSocketProperties extends SocketProperties
      * Whether to enable the socket to write broadcast data
      */
     boolean getBroadcast();
-
-    /**
-     * Whether to keep the Sending socket open
-     */
-    boolean getKeepSendSocketOpen();
-
 }

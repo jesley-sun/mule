@@ -9,7 +9,6 @@ package org.mule.module.socket.api.client;
 import org.mule.module.socket.api.protocol.TcpProtocol;
 import org.mule.module.socket.api.source.ImmutableSocketAttributes;
 import org.mule.module.socket.api.source.SocketAttributes;
-import org.mule.module.socket.internal.SocketUtils;
 import org.mule.module.socket.internal.TcpInputStream;
 
 import java.io.BufferedInputStream;
@@ -27,6 +26,8 @@ public class TcpClient implements SocketClient
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TcpClient.class);
+    protected boolean dataInWorkFinished = false;
+    protected Object notify = new Object();
 
     public TcpClient(Socket socket, TcpProtocol protocol)
     {
@@ -54,20 +55,116 @@ public class TcpClient implements SocketClient
         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(socketOutputStream);
         protocol.write(bufferedOutputStream, data);
         bufferedOutputStream.flush();
-
     }
 
     @Override
     public InputStream read() throws IOException
     {
-        TcpInputStream inputStream = new TcpInputStream(new DataInputStream(new BufferedInputStream(socket.getInputStream())));
+        TcpInputStream inputStream = new TcpInputStream(new DataInputStream(new BufferedInputStream(socket.getInputStream())))
+        {
+            @Override
+            public void close() throws IOException
+            {
+                // Don't actually close the stream, we just want to know if the
+                // we want to stop receiving messages on this socket.
+                // The Protocol is responsible for closing this.
+                dataInWorkFinished = true;
+
+                synchronized (notify)
+                {
+                    notify.notifyAll();
+                }
+
+                getDelegate().close();
+            }
+        };
+
         return protocol.read(inputStream);
     }
 
     @Override
     public void close() throws IOException
     {
-        SocketUtils.closeSocket(socket);
+        // TODO BEWARE, WE ARE NOT CLOSING THE SOCKET THE STREAM IT IS CLOSED FROM THE OUTSIDE
+        // WHAT HAPPENS IF NO ONE CLOSES THAT STREAM?
+        if (!dataInWorkFinished)
+        {
+            synchronized (notify)
+            {
+                if (!dataInWorkFinished)
+                {
+                    try
+                    {
+                        notify.wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        LOGGER.error("INTERRUPTED");
+                    }
+                }
+            }
+        }
+
+        shutdownSocket();
+        socket.close();
+    }
+
+    public void run()
+    {
+        try
+        {
+            boolean hasMoreMessages = true;
+            TcpInputStream inputStream = new TcpInputStream(new DataInputStream(new BufferedInputStream(socket.getInputStream())))
+            {
+                @Override
+                public void close() throws IOException
+                {
+                    // Don't actually close the stream, we just want to know if the
+                    // we want to stop receiving messages on this socket.
+                    // The Protocol is responsible for closing this.
+                    dataInWorkFinished = true;
+
+                    synchronized (notify)
+                    {
+                        notify.notifyAll();
+                    }
+
+                    getDelegate().close();
+                }
+            };
+
+            while (hasMoreMessages)
+            {
+
+                if (inputStream == null)
+                {
+                    inputStream.close();
+                    hasMoreMessages = false;
+                }
+
+                if (inputStream.isStreaming())
+                {
+                    hasMoreMessages = false;
+                }
+
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    protected void shutdownSocket() throws IOException
+    {
+        try
+        {
+            socket.shutdownOutput();
+        }
+        catch (UnsupportedOperationException e)
+        {
+            //Ignore, not supported by ssl sockets
+        }
     }
 
     @Override

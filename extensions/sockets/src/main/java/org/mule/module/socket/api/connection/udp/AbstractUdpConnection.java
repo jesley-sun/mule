@@ -34,27 +34,6 @@ public abstract class AbstractUdpConnection extends AbstractSocketConnection
         this.socketProperties = socketProperties;
     }
 
-    protected void configureConnection() throws ConnectionException
-    {
-        if (socket == null)
-        {
-            throw new IllegalStateException("UDP Socket must be created before being configured");
-        }
-
-        try
-        {
-            socket.setSendBufferSize(socketProperties.getSendBufferSize());
-            socket.setReceiveBufferSize(socketProperties.getReceiveBufferSize());
-            socket.setBroadcast(socketProperties.getBroadcast());
-            socket.setSoTimeout(socketProperties.getTimeout());
-            socket.setReuseAddress(socketProperties.getReuseAddress());
-        }
-        catch (Exception e)
-        {
-            throw new ConnectionException("UDP Socket could not be created", e);
-        }
-    }
-
     @Override
     public void disconnect()
     {

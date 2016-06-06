@@ -35,20 +35,19 @@ public class SocketOperations
     @MetadataScope(outputResolver = SocketMetadataResolver.class)
     public InputStream send(@Connection RequesterConnection connection,
                             @Optional(defaultValue = "#[payload]") Object data,
+                            @Optional(defaultValue = "false") boolean hasResponse,
                             @Optional(defaultValue = "UTF-8") String encoding) throws ConnectionException, IOException
     {
         SocketClient client = connection.getClient();
-        //try
-        //{
-            client.write(data);
+
+        client.write(data);
         System.out.println("WRITE DATA");
-        InputStream read = client.read();
-        System.out.println("READ DATA");
-        return read;
-        //}
-        //catch (IOException e)
-        //{
-        //
-        //}
+
+        if (!hasResponse)
+        {
+            return null;
+        }
+
+        return client.read();
     }
 }

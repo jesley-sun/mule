@@ -20,7 +20,7 @@
     <sockets:listener-config name="tcp-listener">
         <sockets:tcp-listener-connection host="localhost" port="${port_tcp}">
             <sockets:protocol>
-                <sockets:streaming-protocol rethrowExceptionOnRead="true"/>
+                <sockets:streaming-protocol/>
             </sockets:protocol>
             <sockets:tcp-server-socket-properties>
                 <sockets:default-tcp-server-socket-properties/>
@@ -30,12 +30,12 @@
 
     <flow name="tcp-send">
         <sockets:send config-ref="tcp-requester"/>
-        <logger level="ERROR" message="#[org.mule.runtime.core.util.IOUtils.toString(payload)]"/>
+        <logger level="ERROR" message="#['OPERATION: ' + org.mule.runtime.core.util.IOUtils.toString(payload)]"/>
     </flow>
 
     <flow name="tcp-listen">
         <sockets:socket-listener config-ref="tcp-listener"/>
-        <logger level="ERROR" message="#[org.mule.runtime.core.util.IOUtils.toString(payload)]"/>
+        <logger level="ERROR" message="#['SOURCE: ' + org.mule.runtime.core.util.IOUtils.toString(payload)]"/>
         <!--<flow-ref name="onIncomingConnection"/>-->
         <set-payload value="Consumed"/>
     </flow>

@@ -53,10 +53,7 @@ public class SocketUtils
     {
         if (data instanceof InputStream)
         {
-            InputStream is = (InputStream) data;
-            byte[] result = IOUtils.toByteArray((InputStream) data);
-            is.close();
-            return result;
+            return IOUtils.toByteArray((InputStream) data);
         }
         else if (data instanceof MuleMessage)
         {
@@ -75,6 +72,7 @@ public class SocketUtils
         }
         else if (data instanceof String)
         {
+            // todo encoding
             return ((String) data).getBytes();
         }
         else if (data instanceof Serializable)
@@ -209,36 +207,6 @@ public class SocketUtils
         catch (Exception e)
         {
             throw new ConnectionException("Could not bind UDP Socket", e);
-        }
-    }
-
-    public static DatagramSocket connectSocket(DatagramSocket socket, String host, int port) throws ConnectionException
-    {
-        try
-        {
-            socket.connect(getAddress(host, port));
-            return socket;
-
-        }
-        catch (Exception e)
-        {
-            throw new ConnectionException(String.format("Could not connect UDP socket to host '%s' on port '%d'", host, port), e);
-        }
-    }
-
-    public static DatagramSocket connectSocket(DatagramSocket socket, InetAddress address, int port) throws ConnectionException
-    {
-        try
-        {
-            socket.connect(address, port);
-            return socket;
-
-        }
-        catch (Exception e)
-        {
-            throw new ConnectionException(String.format("Could not connect UDP socket to host '%s' on port '%d'",
-                                                        address.getHostAddress(), port), e);
-
         }
     }
 

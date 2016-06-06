@@ -26,21 +26,17 @@ public class UdpSourceClient extends AbstractUdpClient implements SocketClient
     private final DatagramPacket packet;
     private final UdpSocketProperties socketProperties;
 
-    public UdpSourceClient(DatagramPacket packet, UdpSocketProperties socketProperties, ObjectSerializer objectSerializer)
+    public UdpSourceClient(DatagramSocket socket, DatagramPacket packet, UdpSocketProperties socketProperties, ObjectSerializer objectSerializer)
     {
         super(objectSerializer);
         this.packet = packet;
+        this.socket = socket;
         this.socketProperties = socketProperties;
     }
 
     @Override
     public void write(Object data) throws IOException
     {
-        if (this.socket == null)
-        {
-            this.socket = new DatagramSocket();
-        }
-
         byte[] byteArray = SocketUtils.getByteArray(data, true, objectSerializer);
         DatagramPacket sendPacket = createPacket(byteArray);
         sendPacket.setSocketAddress(packet.getSocketAddress());

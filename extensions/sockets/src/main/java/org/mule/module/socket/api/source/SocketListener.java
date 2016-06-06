@@ -7,24 +7,19 @@
 package org.mule.module.socket.api.source;
 
 import static java.lang.String.format;
+import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.mule.module.socket.internal.SocketUtils.createMuleMessage;
 import static org.mule.runtime.core.util.concurrent.ThreadNameHelper.getPrefix;
-import org.mule.module.socket.api.client.SocketClient;
 import org.mule.module.socket.api.connection.ListenerConnection;
+import org.mule.module.socket.api.worker.SocketWorker;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.execution.CompletionHandler;
-import org.mule.runtime.api.execution.ExceptionCallback;
-import org.mule.runtime.api.message.MuleEvent;
-import org.mule.runtime.api.message.MuleMessage;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.construct.FlowConstructAware;
 import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.runtime.source.Source;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,7 +58,8 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
 
     private void listen()
     {
-
+        // todo number?
+        ExecutorService workersExecutorService = newScheduledThreadPool(5);
         for (; ; )
         {
             if (isRequestedToStop())
@@ -74,62 +70,65 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
             try
             {
 
-                SocketClient client = connection.listen();
-                System.out.println("NEW CONNECTION");
+                SocketWorker worker = connection.listen();
+                workersExecutorService.execute(() -> worker.run(muleContext, sourceContext.getMessageHandler()));
 
-                if (isRequestedToStop())
-                {
-                    client.close();
-                    return;
-                }
+                //SocketClient client = connection.listen();
+                //LOGGER.debug("NEW CONNECTION");
+                //
+                //if (isRequestedToStop())
+                //{
+                //    client.close();
+                //    return;
+                //}
+                //
+                //MuleMessage<InputStream, SocketAttributes> muleMessage = createMuleMessage(client.read(),
+                //                                                                           client.getAttributes(),
+                //                                                                           muleContext);
 
-                MuleMessage<InputStream, SocketAttributes> muleMessage = createMuleMessage(client.read(),
-                                                                                           client.getAttributes(),
-                                                                                           muleContext);
-
-                sourceContext.getMessageHandler().handle(muleMessage, new CompletionHandler<MuleEvent, Exception, MuleEvent>()
-                {
-                    @Override
-                    public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback)
-                    {
-                        System.out.println("ON COMPLETITON");
-
-                        if (isRequestedToStop())
-                        {
-                            try
-                            {
-                                client.close();
-                            }
-                            catch (IOException e)
-                            {
-                                LOGGER.error(e.getMessage());
-                            }
-                        }
-                        try
-                        {
-                            client.write(muleEvent.getMessage().getPayload());
-                        }
-                        catch (IOException e)
-                        {
-                            exceptionCallback.onException(e);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Exception e)
-                    {
-                        LOGGER.error(e.getMessage());
-                        try
-                        {
-                            client.close();
-                        }
-                        catch (IOException e1)
-                        {
-                            //fixme
-                            LOGGER.error(e1.getMessage());
-                        }
-                    }
-                });
+                //sourceContext.getMessageHandler().handle(muleMessage, new CompletionHandler<MuleEvent, Exception, MuleEvent>()
+                //{
+                //    @Override
+                //    public void onCompletion(MuleEvent muleEvent, ExceptionCallback<MuleEvent, Exception> exceptionCallback)
+                //    {
+                //        LOGGER.debug("ON COMPLETITON");
+                //
+                //        if (isRequestedToStop())
+                //        {
+                //            try
+                //            {
+                //                client.close();
+                //            }
+                //            catch (IOException e)
+                //            {
+                //                LOGGER.error(e.getMessage());
+                //            }
+                //        }
+                //        try
+                //        {
+                //            client.write(muleEvent.getMessage().getPayload());
+                //        }
+                //        catch (IOException e)
+                //        {
+                //            exceptionCallback.onException(e);
+                //        }
+                //    }
+                //
+                //    @Override
+                //    public void onFailure(Exception e)
+                //    {
+                //        LOGGER.error(e.getMessage());
+                //        try
+                //        {
+                //            client.close();
+                //        }
+                //        catch (IOException e1)
+                //        {
+                //            //fixme
+                //            LOGGER.error(e1.getMessage());
+                //        }
+                //    }
+                //});
             }
             catch (ConnectionException e)
             {
@@ -154,7 +153,7 @@ public class SocketListener extends Source<InputStream, SocketAttributes> implem
     @Override
     public void stop()
     {
-        System.out.println("STOPPED");
+        LOGGER.debug("STOPPED");
         stopRequested.set(true);
         shutdownExecutor();
     }

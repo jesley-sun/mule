@@ -23,29 +23,8 @@ public class DefaultUdpSocketProperties extends AbstractSocketProperties impleme
     @Optional(defaultValue = "false")
     protected boolean broadcast = false;
 
-    /**
-     */
-    @Parameter
-    @Optional(defaultValue = "false")
-    protected boolean keepSendSocketOpen = false;
-
     public boolean getBroadcast()
     {
         return broadcast;
-    }
-
-    public void setBroadcast(boolean broadcast)
-    {
-        this.broadcast = broadcast;
-    }
-
-    public boolean getKeepSendSocketOpen()
-    {
-        return keepSendSocketOpen;
-    }
-
-    public void setKeepSendSocketOpen(boolean keepSendSocketOpen)
-    {
-        this.keepSendSocketOpen = keepSendSocketOpen;
     }
 }

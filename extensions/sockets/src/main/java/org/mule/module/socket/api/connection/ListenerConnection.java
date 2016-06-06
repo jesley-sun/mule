@@ -7,11 +7,12 @@
 package org.mule.module.socket.api.connection;
 
 import org.mule.module.socket.api.client.SocketClient;
+import org.mule.module.socket.api.worker.SocketWorker;
 import org.mule.runtime.api.connection.ConnectionException;
 
 import java.io.IOException;
 
 public interface ListenerConnection extends SocketConnection
 {
-    SocketClient listen() throws IOException, ConnectionException;
+    SocketWorker listen() throws IOException, ConnectionException;
 }

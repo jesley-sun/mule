@@ -6,6 +6,7 @@
  */
 package org.mule.module.socket.api.connection.tcp;
 
+import static java.lang.String.*;
 import static org.mule.module.socket.internal.SocketUtils.getSocketAddress;
 import org.mule.module.socket.api.client.TcpClient;
 import org.mule.module.socket.api.connection.RequesterConnection;
@@ -85,7 +86,7 @@ public class TcpRequesterConnection extends AbstractTcpConnection implements Req
         }
         catch (Exception e)
         {
-            throw new ConnectionException(String.format("Could not connect TCP requester socket to host '%s' on port '%d'", host, port), e);
+            throw new ConnectionException(format("Could not connect TCP requester socket to host '%s' on port '%d'", host, port), e);
         }
 
     }
