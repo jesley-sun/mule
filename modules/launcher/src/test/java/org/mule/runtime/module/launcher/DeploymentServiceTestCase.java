@@ -1406,6 +1406,17 @@ public class DeploymentServiceTestCase extends AbstractMuleContextTestCase
     }
 
     @Test
+    public void deploysAppWithLinkageError() throws Exception
+    {
+        ApplicationFileBuilder applicationFileBuilder = new ApplicationFileBuilder("appWithLinkageError").definedBy("app-with-linkage-error-config.xml").usingLibrary("lib/linkageChild.jar");
+        addPackedAppFromBuilder(applicationFileBuilder);
+
+        deploymentService.start();
+
+        assertDeploymentSuccess(applicationDeploymentListener, applicationFileBuilder.getId());
+    }
+
+    @Test
     public void deploysDomainWithSharedLibPrecedenceOverApplicationSharedLib() throws Exception
     {
         final String domainId = "shared-lib";
