@@ -244,12 +244,12 @@ public final class StringMessageUtils
             PropertyScope scope = PropertyScope.ALL_SCOPES[i];
             try
             {
-                Set<Object> names = new TreeSet<Object>(m.getPropertyNames(scope));
+                Set<Object> names = new TreeSet<Object>(m.getOutboundPropertyNames());
                 buf.append("  ").append(scope.getScopeName().toUpperCase()).append(" scoped properties:").append(SystemUtils.LINE_SEPARATOR);
 
                 for (Object name : names)
                 {
-                    Object value = m.getProperty(name.toString(), scope);
+                    Object value = m.getOutboundProperty(name.toString());
                     // avoid calling toString recursively on MuleMessages
                     if (value instanceof MuleMessage)
                     {

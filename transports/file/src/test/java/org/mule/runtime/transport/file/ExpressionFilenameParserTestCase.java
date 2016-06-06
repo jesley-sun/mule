@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.mule.runtime.core.DefaultMuleEvent;
 import org.mule.runtime.core.DefaultMuleMessage;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.tck.junit4.AbstractMuleContextEndpointTestCase;
@@ -42,8 +41,8 @@ public class ExpressionFilenameParserTestCase extends AbstractMuleContextEndpoin
 
         message = new DefaultMuleMessage("hello", muleContext);
         message.setOutboundProperty("foo", "bar");
-        message.setProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, "originalName", PropertyScope.INBOUND);
-        message.setProperty(FileConnector.PROPERTY_FILENAME, "newName", PropertyScope.INBOUND);
+        message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, "originalName");
+        message.setOutboundProperty(FileConnector.PROPERTY_FILENAME, "newName");
 
         event = new DefaultMuleEvent(message, getTestFlow());
     }

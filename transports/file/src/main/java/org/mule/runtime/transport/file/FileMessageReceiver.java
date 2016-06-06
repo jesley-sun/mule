@@ -8,7 +8,6 @@ package org.mule.runtime.transport.file;
 
 import org.mule.runtime.core.DefaultMuleEvent;
 import org.mule.runtime.core.DefaultMuleMessage;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.MessagingException;
 import org.mule.runtime.core.api.MuleEvent;
@@ -356,12 +355,12 @@ public class FileMessageReceiver extends AbstractPollingMessageReceiver
 
         if (workDir != null)
         {
-            message.setProperty(FileConnector.PROPERTY_SOURCE_DIRECTORY, file.getParent(), PropertyScope.INBOUND);
-            message.setProperty(FileConnector.PROPERTY_SOURCE_FILENAME, file.getName(), PropertyScope.INBOUND);
+            message.setOutboundProperty(FileConnector.PROPERTY_SOURCE_DIRECTORY, file.getParent());
+            message.setOutboundProperty(FileConnector.PROPERTY_SOURCE_FILENAME, file.getName());
         }
 
-        message.setProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory, PropertyScope.INBOUND);
-        message.setProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, originalSourceFileName, PropertyScope.INBOUND);
+        message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory);
+        message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, originalSourceFileName);
 
         // TODO
         message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory);
@@ -369,7 +368,7 @@ public class FileMessageReceiver extends AbstractPollingMessageReceiver
 
         if (forceSync)
         {
-            message.setProperty(MuleProperties.MULE_FORCE_SYNC_PROPERTY, Boolean.TRUE, PropertyScope.INBOUND);
+            message.setOutboundProperty(MuleProperties.MULE_FORCE_SYNC_PROPERTY, Boolean.TRUE);
         }
 
         final Object originalPayload = message.getPayload();
@@ -573,9 +572,9 @@ public class FileMessageReceiver extends AbstractPollingMessageReceiver
 
             // create new Message for destinationFile
             message = createMuleMessage(destinationFile, endpoint.getEncoding());
-            message.setProperty(FileConnector.PROPERTY_FILENAME, destinationFile.getName(), PropertyScope.INBOUND);
-            message.setProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, originalSourceFileName, PropertyScope.INBOUND);
-            message.setProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory, PropertyScope.INBOUND);
+            message.setOutboundProperty(FileConnector.PROPERTY_FILENAME, destinationFile.getName());
+            message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, originalSourceFileName);
+            message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory);
         }
 
         // finally deliver the file message

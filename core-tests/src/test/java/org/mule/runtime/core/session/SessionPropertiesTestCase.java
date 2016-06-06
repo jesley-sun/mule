@@ -14,7 +14,6 @@ import static org.junit.Assert.assertSame;
 import org.mule.runtime.core.DefaultMuleEvent;
 import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.MessageExchangePattern;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.MuleSession;
@@ -124,9 +123,9 @@ public class SessionPropertiesTestCase extends AbstractMuleContextTestCase
 
         // Serialize and deserialize session using default session handler
         new SerializeAndEncodeSessionHandler().storeSessionInfoToMessage(event.getSession(), message);
-        message.setProperty(MuleProperties.MULE_SESSION_PROPERTY,
-            message.getProperty(MuleProperties.MULE_SESSION_PROPERTY, PropertyScope.OUTBOUND),
-            PropertyScope.INBOUND);
+        message.setOutboundProperty(MuleProperties.MULE_SESSION_PROPERTY,
+                                    message.getOutboundProperty(MuleProperties.MULE_SESSION_PROPERTY)
+        );
         MuleSession newSession = new SerializeAndEncodeSessionHandler().retrieveSessionInfoFromMessage(message);
 
         // Session after deserialization is a new instance that does not equal old
@@ -190,9 +189,9 @@ public class SessionPropertiesTestCase extends AbstractMuleContextTestCase
 
         // Serialize and deserialize session using default session handler
         new SerializeAndEncodeSessionHandler().storeSessionInfoToMessage(event.getSession(), message);
-        message.setProperty(MuleProperties.MULE_SESSION_PROPERTY,
-            message.getProperty(MuleProperties.MULE_SESSION_PROPERTY, PropertyScope.OUTBOUND),
-            PropertyScope.INBOUND);
+        message.setOutboundProperty(MuleProperties.MULE_SESSION_PROPERTY,
+                                    message.getOutboundProperty(MuleProperties.MULE_SESSION_PROPERTY)
+        );
         MuleSession newSession = new SerializeAndEncodeSessionHandler().retrieveSessionInfoFromMessage(message);
 
         // Session after deserialization is a new instance that does not equal old

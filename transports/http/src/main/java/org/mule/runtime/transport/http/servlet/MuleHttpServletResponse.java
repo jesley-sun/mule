@@ -6,7 +6,6 @@
  */
 package org.mule.runtime.transport.http.servlet;
 
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.transport.http.HttpConnector;
@@ -85,7 +84,7 @@ public class MuleHttpServletResponse implements HttpServletResponse
     @Override
     public void setContentType(String type)
     {
-        message.setProperty(HttpConstants.HEADER_CONTENT_TYPE, type, PropertyScope.OUTBOUND);
+        message.setOutboundProperty(HttpConstants.HEADER_CONTENT_TYPE, type);
     }
 
     @Override

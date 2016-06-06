@@ -12,7 +12,6 @@ import static org.mockito.Mockito.mock;
 import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
-import org.mule.runtime.core.PropertyScope;
 
 import java.util.Collection;
 import java.util.Map;
@@ -45,7 +44,7 @@ public class MessagePropertiesTestCase extends AbstractELTestCase
     @Test
     public void inboundPropertyMap() throws Exception
     {
-        event.getMessage().setProperty("foo", "bar", PropertyScope.INBOUND);
+        event.getMessage().setOutboundProperty("foo", "bar");
         assertTrue(evaluate("message.inboundProperties", event) instanceof Map);
     }
 
@@ -58,14 +57,14 @@ public class MessagePropertiesTestCase extends AbstractELTestCase
     @Test
     public void inboundProperty() throws Exception
     {
-        event.getMessage().setProperty("foo", "bar", PropertyScope.INBOUND);
+        event.getMessage().setOutboundProperty("foo", "bar");
         assertEquals("bar", evaluate("message.inboundProperties['foo']", event));
     }
 
     @Test
     public void assignValueToInboundProperty() throws Exception
     {
-        event.getMessage().setProperty("foo", "bar", PropertyScope.INBOUND);
+        event.getMessage().setOutboundProperty("foo", "bar");
         assertUnsupportedOperation("message.inboundProperties['foo']='bar'", event);
     }
 
@@ -78,7 +77,7 @@ public class MessagePropertiesTestCase extends AbstractELTestCase
     @Test
     public void outboundPropertyMap() throws Exception
     {
-        event.getMessage().setProperty("foo", "bar", PropertyScope.OUTBOUND);
+        event.getMessage().setOutboundProperty("foo", "bar");
         assertTrue(evaluate("message.outboundProperties", event) instanceof Map);
     }
 

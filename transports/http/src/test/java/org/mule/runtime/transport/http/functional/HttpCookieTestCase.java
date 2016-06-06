@@ -13,10 +13,12 @@ import static org.junit.Assert.fail;
 import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.client.MuleClient;
+import org.mule.runtime.module.http.internal.ParameterMap;
 import org.mule.runtime.transport.http.HttpConstants;
 import org.mule.runtime.transport.http.HttpRequest;
 import org.mule.tck.junit4.rule.DynamicPort;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,9 +84,9 @@ public class HttpCookieTestCase extends AbstractMockHttpServerTestCase
         assertCookiesReceived(EXPECTED_CUSTOM_COOKIE);
     }
 
-    private void doRequest(String path, Object cookiesObject) throws Exception
+    private void doRequest(String path, Serializable cookiesObject) throws Exception
     {
-        Map<String, Object> outboundProperties = new HashMap<String, Object>();
+        Map<String, Serializable> outboundProperties = new HashMap<>();
 
         outboundProperties.put("COOKIE_HEADER", "MYCOOKIE");
         outboundProperties.put("PATH", path);
@@ -99,12 +101,12 @@ public class HttpCookieTestCase extends AbstractMockHttpServerTestCase
         assertTrue(cookieFound);
     }
 
-    private Map<String, String> getCookieMap()
+    private ParameterMap getCookieMap()
     {
         Map<String, String> cookieMap = new HashMap<String, String>();
         cookieMap.put("customCookie", "yes");
         cookieMap.put("expressionCookie", "#[message.inboundProperties.COOKIE_HEADER]");
-        return cookieMap;
+        return new ParameterMap(cookieMap);
     }
 
     private Cookie[] getCookieArray()

@@ -22,6 +22,7 @@ import org.mule.runtime.core.endpoint.MuleEndpointURI;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class DefaultMuleEventTestCase extends AbstractMuleTestCase
 {
 
     private final MuleContext muleContext = mock(MuleContext.class, RETURNS_DEEP_STUBS);
-    private final DefaultMuleMessage muleMessage = new DefaultMuleMessage("test-data", (Map<String, Object>) null, muleContext);
+    private final DefaultMuleMessage muleMessage = new DefaultMuleMessage("test-data", (Map<String, Serializable>) null, muleContext);
 
     @Test
     public void transactedRequestResponse() throws Exception

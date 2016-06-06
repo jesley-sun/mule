@@ -31,6 +31,7 @@ import org.mule.runtime.transport.http.HttpResponse;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -410,7 +411,7 @@ public class HttpResponseBuilderTestCase extends AbstractMuleTestCase
         headers.put(HttpConstants.HEADER_AGE, "12");
         httpResponseBuilder.setHeaders(headers);
 
-        Map<String, Object> outboundProperties = new HashMap<String, Object>();
+        Map<String, Serializable> outboundProperties = new HashMap<>();
         outboundProperties.put(HttpConstants.HEADER_CACHE_CONTROL, "no-cache");
         outboundProperties.put(HttpConstants.HEADER_AGE, "20");
         outboundProperties.put(HttpConstants.HEADER_LOCATION, "http://localhost:9090");

@@ -12,7 +12,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MessagingException;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleEvent;
@@ -212,7 +211,7 @@ public class FileMessageReceiverMessageProcessingTestCase extends AbstractMuleTe
         when(mockInboundEndpoint.getFilter()).thenReturn(null);
         when(mockFileConnector.createMuleMessageFactory()).thenReturn(mockMessageFactory);
         mockMessageFactory = new FileMuleMessageFactory();
-        when(mockMessage.getProperty(MuleProperties.MULE_FORCE_SYNC_PROPERTY, PropertyScope.INBOUND, Boolean.FALSE)).thenReturn(true);
+        when(mockMessage.getOutboundProperty(MuleProperties.MULE_FORCE_SYNC_PROPERTY, Boolean.FALSE)).thenReturn(true);
         when(mockMessage.getInboundProperty(MuleProperties.MULE_ROOT_MESSAGE_ID_PROPERTY)).thenReturn(UUID.getUUID());
         when(mockHandledMessagingException.getEvent()).thenReturn(mockMuleEvent);
         when(mockUnhandledMessagingException.getEvent()).thenReturn(mockMuleEvent);

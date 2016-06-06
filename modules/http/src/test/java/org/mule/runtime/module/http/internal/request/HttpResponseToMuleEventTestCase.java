@@ -9,7 +9,6 @@ package org.mule.runtime.module.http.internal.request;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mule.runtime.core.PropertyScope.INBOUND;
 import static org.mule.runtime.module.http.api.HttpConstants.ResponseProperties.HTTP_REASON_PROPERTY;
 import static org.mule.runtime.module.http.api.HttpConstants.ResponseProperties.HTTP_STATUS_PROPERTY;
 import org.mule.runtime.core.api.MessagingException;
@@ -70,7 +69,7 @@ public class HttpResponseToMuleEventTestCase extends AbstractMuleContextTestCase
     @Test
     public void previousInboundPropertiesAreRemoved() throws MessagingException
     {
-        event.getMessage().setProperty("TestInboundProperty", TEST_VALUE, INBOUND);
+        event.getMessage().setOutboundProperty("TestInboundProperty", TEST_VALUE);
         httpResponseToMuleEvent.convert(event, httpResponse, null);
         assertThat(event.getMessage().getInboundProperty("TestInboundProperty"), nullValue());
     }

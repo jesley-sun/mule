@@ -16,6 +16,7 @@ import org.mule.runtime.core.api.transformer.Transformer;
 import org.mule.runtime.core.api.transport.Connector;
 import org.mule.runtime.core.endpoint.URIBuilder;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -56,9 +57,9 @@ public interface EndpointBuilder extends MuleContextAware, Cloneable
 
     void setName(String name);
 
-    void setProperty(Object key, Object value);
+    void setProperty(String key, Serializable value);
 
-    void setProperties(Map<Object, Object> properties);
+    void setProperties(Map<String, Serializable> properties);
 
     void setTransactionConfig(TransactionConfig transactionConfig);
 

@@ -17,6 +17,7 @@ import org.mule.runtime.core.component.ComponentException;
 import org.mule.runtime.transport.http.HttpConstants;
 import org.mule.tck.junit4.rule.DynamicPort;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class RestServiceWrapperFunctionalTestCase extends FunctionalTestCase
     @Test
     public void testRequiredParameters() throws Exception
     {
-        Map<String, Object> props = new HashMap<String, Object>();
+        Map<String, Serializable> props = new HashMap<>();
         props.put("baz-header", "baz");
         props.put("bar-optional-header", "bar");
 
@@ -74,7 +75,7 @@ public class RestServiceWrapperFunctionalTestCase extends FunctionalTestCase
     @Test
     public void testOptionalParametersMissing() throws Exception
     {
-        Map<String, Object> props = new HashMap<String, Object>();
+        Map<String, Serializable> props = new HashMap<>();
         props.put("baz-header", "baz");
 
         MuleMessage result = muleContext.getClient().send("restServiceEndpoint3", null, props);
@@ -84,7 +85,7 @@ public class RestServiceWrapperFunctionalTestCase extends FunctionalTestCase
     @Test
     public void testRequiredParametersMissing() throws Exception
     {
-        Map<String, Object> props = new HashMap<String, Object>();
+        Map<String, Serializable> props = new HashMap<>();
 
         MuleMessage result = muleContext.getClient().send("restServiceEndpoint3", null, props);
         assertNotNull(result);

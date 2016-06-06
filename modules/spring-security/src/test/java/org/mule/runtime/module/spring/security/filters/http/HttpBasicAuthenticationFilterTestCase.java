@@ -13,7 +13,6 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mule.runtime.core.PropertyScope.OUTBOUND;
 import static org.mule.runtime.module.http.api.HttpHeaders.Names.AUTHORIZATION;
 
 import org.mule.runtime.core.RequestContext;
@@ -22,7 +21,6 @@ import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.security.Authentication;
 import org.mule.runtime.core.api.security.SecurityManager;
 import org.mule.runtime.core.api.security.UnauthorisedException;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.module.http.internal.filter.HttpBasicAuthenticationFilter;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
@@ -38,7 +36,7 @@ public class HttpBasicAuthenticationFilterTestCase extends AbstractMuleContextTe
 
         MuleEvent event = this.getTestEvent("a");
         MuleMessage message = event.getMessage();
-        message.setProperty(AUTHORIZATION, "Basic a", PropertyScope.INBOUND);
+        message.setOutboundProperty(AUTHORIZATION, "Basic a");
         RequestContext.setEvent(event);
 
         HttpBasicAuthenticationFilter filter = new HttpBasicAuthenticationFilter();
@@ -56,8 +54,8 @@ public class HttpBasicAuthenticationFilterTestCase extends AbstractMuleContextTe
         }
         catch (UnauthorisedException e)
         {
-            assertNotNull(event.getMessage().getProperty("WWW-Authenticate", OUTBOUND));
-            assertEquals("Basic realm=", event.getMessage().getProperty("WWW-Authenticate", OUTBOUND));
+            assertNotNull(event.getMessage().getOutboundProperty("WWW-Authenticate"));
+            assertEquals("Basic realm=", event.getMessage().getOutboundProperty("WWW-Authenticate"));
             verify(manager);
         }
         RequestContext.setEvent(oldEvent);

@@ -11,16 +11,21 @@ import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.config.MuleProperties;
 import org.mule.runtime.core.transport.AbstractMuleMessageFactory;
 
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
 {
+
+    private static final Log logger = LogFactory.getLog(JmsMuleMessageFactory.class);
 
     @Override
     protected Class<?>[] getSupportedTransportMessageTypes()
@@ -39,10 +44,9 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
     {        
         Message jmsMessage = (Message) transportMessage;
         
-        Map<String, Object> messageProperties = new HashMap<String, Object>();
+        Map<String, Serializable> messageProperties = new HashMap<>();
         addCorrelationProperties(jmsMessage, muleMessage, messageProperties);
         addDeliveryModeProperty(jmsMessage, messageProperties);
-        addDestinationProperty(jmsMessage, messageProperties);
         addExpirationProperty(jmsMessage, messageProperties);
         addMessageIdProperty(jmsMessage, messageProperties);
         addPriorityProperty(jmsMessage, messageProperties);
@@ -56,7 +60,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         muleMessage.addInboundProperties(messageProperties);
     }
 
-    protected void propagateJMSProperties(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void propagateJMSProperties(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -69,7 +73,15 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
                     Object value = jmsMessage.getObjectProperty(key);
                     if (value != null)
                     {
-                        messageProperties.put(key, value);
+                        if (value instanceof Serializable)
+                        {
+                            messageProperties.put(key, (Serializable) value);
+                        }
+                        else
+                        {
+                            logger.warn("The JMS property" + key + " is not serializable and will not be propagated by "
+                                        + "Mule");
+                        }
                     }
                 }
                 catch (JMSException e1)
@@ -84,7 +96,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addTypeProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addTypeProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -100,7 +112,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addTimestampProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addTimestampProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -117,13 +129,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
     {
         try
         {
-            Destination replyTo = jmsMessage.getJMSReplyTo();
-            if (replyTo != null)
-            {
-                muleMessage.setOutboundProperty(JmsConstants.JMS_REPLY_TO, replyTo);
-            }
-
-            muleMessage.setReplyTo(replyTo);
+            muleMessage.setReplyTo(jmsMessage.getJMSReplyTo());
         }
         catch (JMSException e)
         {
@@ -131,7 +137,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addRedeliveredProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addRedeliveredProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -144,7 +150,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addPriorityProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addPriorityProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -157,7 +163,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addMessageIdProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addMessageIdProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -174,7 +180,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addExpirationProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addExpirationProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -187,23 +193,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
         }
     }
 
-    protected void addDestinationProperty(Message jmsMessage, Map<String, Object> messageProperties)
-    {
-        try
-        {
-            Destination value = jmsMessage.getJMSDestination();
-            if (value != null)
-            {
-                messageProperties.put(JmsConstants.JMS_DESTINATION, value);
-            }
-        }
-        catch (JMSException e)
-        {
-            // ignored
-        }
-    }
-
-    protected void addDeliveryModeProperty(Message jmsMessage, Map<String, Object> messageProperties)
+    protected void addDeliveryModeProperty(Message jmsMessage, Map<String, Serializable> messageProperties)
     {
         try
         {
@@ -217,7 +207,7 @@ public class JmsMuleMessageFactory extends AbstractMuleMessageFactory
     }
 
     protected void addCorrelationProperties(Message jmsMessage, MuleMessage muleMessage, 
-        Map<String, Object> messageProperties)
+        Map<String, Serializable> messageProperties)
     {
         try
         {

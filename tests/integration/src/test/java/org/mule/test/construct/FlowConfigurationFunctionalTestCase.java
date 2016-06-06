@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.mule.functional.junit4.FunctionalTestCase;
 import org.mule.functional.junit4.TransactionConfigEnum;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MessagingException;
 import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleException;
@@ -469,7 +468,7 @@ public class FlowConfigurationFunctionalTestCase extends FunctionalTestCase
     public void testInvoke2() throws Exception
     {
         MuleMessage message = getTestMuleMessage("0");
-        message.setProperty("one", "header1val", PropertyScope.INBOUND);
+        message.setOutboundProperty("one", "header1val");
         final MuleMessage response = flowRunner("invoke2").withPayload(message).run().getMessage();
         assertEquals("header1valrecieved", getPayloadAsString(response));
     }
@@ -492,7 +491,7 @@ public class FlowConfigurationFunctionalTestCase extends FunctionalTestCase
     public void testEnrichWithAttributes() throws Exception
     {
         final MuleMessage muleMessage = flowRunner("enrich").withPayload(getTestMuleMessage("0")).run().getMessage();
-        assertEquals("0Hello", muleMessage.getProperty("helloHeader", PropertyScope.OUTBOUND));
+        assertEquals("0Hello", muleMessage.getOutboundProperty("helloHeader"));
     }
 
     @Test
@@ -500,8 +499,8 @@ public class FlowConfigurationFunctionalTestCase extends FunctionalTestCase
     {
         MuleMessage result = flowRunner("enrich2").withPayload(getTestMuleMessage("0")).run().getMessage();
 
-        assertEquals("0Hello", result.getProperty("helloHeader", PropertyScope.OUTBOUND));
-        assertEquals("0Hello", result.getProperty("helloHeader2", PropertyScope.OUTBOUND));
+        assertEquals("0Hello", result.getOutboundProperty("helloHeader"));
+        assertEquals("0Hello", result.getOutboundProperty("helloHeader2"));
     }
 
     @Test
@@ -510,7 +509,7 @@ public class FlowConfigurationFunctionalTestCase extends FunctionalTestCase
         // MULE-5544
         MuleMessage result = flowRunner("enrichcomponent").withPayload(getTestMuleMessage("0")).run().getMessage();
 
-        assertEquals("0", result.getProperty("echoHeader", PropertyScope.OUTBOUND));
+        assertEquals("0", result.getOutboundProperty("echoHeader"));
     }
 
     @Test
@@ -519,7 +518,7 @@ public class FlowConfigurationFunctionalTestCase extends FunctionalTestCase
         // MULE-5544
         MuleMessage result = flowRunner("enrichcomponent2").withPayload(getTestMuleMessage("0")).run().getMessage();
 
-        assertEquals("0", result.getProperty("echoHeader", PropertyScope.OUTBOUND));
+        assertEquals("0", result.getOutboundProperty("echoHeader"));
     }
 
     @Test
@@ -532,7 +531,7 @@ public class FlowConfigurationFunctionalTestCase extends FunctionalTestCase
     public void testLoggerHeader() throws Exception
     {
         MuleMessage message = getTestMuleMessage("0");
-        message.setProperty("toLog", "valueToLog", PropertyScope.INBOUND);
+        message.setOutboundProperty("toLog", "valueToLog");
         flowRunner("loggerheader").withPayload(message).run();
     }
 

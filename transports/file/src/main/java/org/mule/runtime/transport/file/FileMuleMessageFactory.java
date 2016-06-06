@@ -7,7 +7,6 @@
 package org.mule.runtime.transport.file;
 
 import org.mule.runtime.core.DefaultMuleMessage;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.transport.AbstractMuleMessageFactory;
 
@@ -72,9 +71,9 @@ public class FileMuleMessageFactory extends AbstractMuleMessageFactory
 
     protected void setPropertiesFromFile(MuleMessage message, File file)
     {
-        message.setProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, file.getName(), PropertyScope.INBOUND);
-        message.setProperty(FileConnector.PROPERTY_DIRECTORY, file.getParent(), PropertyScope.INBOUND);
-        message.setProperty(FileConnector.PROPERTY_FILE_SIZE, file.length(), PropertyScope.INBOUND);
-        message.setProperty(FileConnector.PROPERTY_FILE_TIMESTAMP, file.lastModified(), PropertyScope.INBOUND);
+        message.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, file.getName());
+        message.setOutboundProperty(FileConnector.PROPERTY_DIRECTORY, file.getParent());
+        message.setOutboundProperty(FileConnector.PROPERTY_FILE_SIZE, file.length());
+        message.setOutboundProperty(FileConnector.PROPERTY_FILE_TIMESTAMP, file.lastModified());
     }
 }

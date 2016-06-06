@@ -9,7 +9,9 @@ package org.mule.runtime.transport.http;
 import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.expression.ExpressionManager;
+import org.mule.runtime.module.http.internal.ParameterMap;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
@@ -340,7 +342,7 @@ public class CookieHelper
      *            as the data of the cookies that are added.
      */
     public static void addCookiesToClient(HttpClient client,
-                                          Object cookiesObject,
+                                          Serializable cookiesObject,
                                              String policy,
                                              MuleEvent event,
                                              URI destinationUri)
@@ -368,7 +370,7 @@ public class CookieHelper
      * @param cookieName the new cookie name to be added.
      * @param cookieValue the new cookie value to be added.
      */
-    public static Object putAndMergeCookie(Object preExistentCookies, String cookieName, String cookieValue)
+    public static Serializable putAndMergeCookie(Serializable preExistentCookies, String cookieName, String cookieValue)
     {
         return CookieStorageType.resolveCookieStorageType(preExistentCookies).putAndMergeCookie(
             preExistentCookies, cookieName, cookieValue);
@@ -386,7 +388,7 @@ public class CookieHelper
      * Cookies (for example, on Cookie[]).
      * </p>
      */
-    public static Object putAndMergeCookie(Object preExistentCookies, Cookie[] newCookiesArray)
+    public static Serializable putAndMergeCookie(Serializable preExistentCookies, Cookie[] newCookiesArray)
     {
         return CookieStorageType.resolveCookieStorageType(preExistentCookies).putAndMergeCookie(
             preExistentCookies, newCookiesArray);
@@ -404,7 +406,7 @@ public class CookieHelper
      * Cookies (for example, on Cookie[]).
      * </p>
      */
-    public static Object putAndMergeCookie(Object preExistentCookies, Map<String, String> newCookiesMap)
+    public static Serializable putAndMergeCookie(Serializable preExistentCookies, Map<String, String> newCookiesMap)
     {
         return CookieStorageType.resolveCookieStorageType(preExistentCookies).putAndMergeCookie(
             preExistentCookies, newCookiesMap);
@@ -414,7 +416,7 @@ public class CookieHelper
      * Searches and return the cookie with the cookieName in the cookiesObject. It
      * returns <code>null</code> if the cookie is not present.
      */
-    public static String getCookieValueFromCookies(Object cookiesObject, String cookieName)
+    public static String getCookieValueFromCookies(Serializable cookiesObject, String cookieName)
     {
         return CookieStorageType.resolveCookieStorageType(cookiesObject).getCookieValueFromCookies(
             cookiesObject, cookieName);
@@ -423,7 +425,7 @@ public class CookieHelper
     /**
      * Returns an array view of the cookiesObject.
      */
-    public static Cookie[] asArrayOfCookies(Object cookiesObject)
+    public static Cookie[] asArrayOfCookies(Serializable cookiesObject)
     {
         return CookieStorageType.resolveCookieStorageType(cookiesObject).asArrayOfCookies(cookiesObject);
     }
@@ -433,7 +435,7 @@ public class CookieHelper
 /**
  * This enum type is here to distinguish and handle the two type of cookie storage
  * that we have. The method
- * {@link CookieStorageType#resolveCookieStorageType(Object)} allows you to select
+ * {@link CookieStorageType#resolveCookieStorageType(Serializable)} allows you to select
  * the appropriate {@link CookieStorageType} for the cookiesObject that you have.
  */
 enum CookieStorageType
@@ -443,7 +445,7 @@ enum CookieStorageType
      * This corresponds to the storage of cookies as a Cookie[].
      * </p>
      * <p>
-     * All the parameters of type {@link Object} in the method of this object are
+     * All the parameters of type {@link Serializable} in the method of this object are
      * assumed to be of type Cookie[] and won't be checked. They will be cast to
      * Cookie[].
      * </p>
@@ -451,7 +453,7 @@ enum CookieStorageType
     ARRAY_OF_COOKIES
     {
         @Override
-        public Object putAndMergeCookie(Object preExistentCookies, String cookieName, String cookieValue)
+        public Serializable putAndMergeCookie(Serializable preExistentCookies, String cookieName, String cookieValue)
         {
             final Cookie[] preExistentCookiesArray = (Cookie[]) preExistentCookies;
 
@@ -509,7 +511,7 @@ enum CookieStorageType
         }
 
         @Override
-        public String getCookieValueFromCookies(Object cookiesObject, String cookieName)
+        public String getCookieValueFromCookies(Serializable cookiesObject, String cookieName)
         {
             Cookie[] cookies = (Cookie[]) cookiesObject;
 
@@ -526,7 +528,7 @@ enum CookieStorageType
 
         @Override
         public void addCookiesToClient(HttpClient client,
-                                       Object cookiesObject,
+                                       Serializable cookiesObject,
                                        String policy,
                                        MuleEvent event,
                                        URI destinationUri)
@@ -548,7 +550,7 @@ enum CookieStorageType
         }
 
         @Override
-        public Object putAndMergeCookie(Object preExistentCookies, Cookie[] newCookiesArray)
+        public Serializable putAndMergeCookie(Serializable preExistentCookies, Cookie[] newCookiesArray)
         {
             if (newCookiesArray == null)
             {
@@ -577,7 +579,7 @@ enum CookieStorageType
         }
 
         @Override
-        public Object putAndMergeCookie(Object preExistentCookies, Map<String, String> newCookiesMap)
+        public Serializable putAndMergeCookie(Serializable preExistentCookies, Map<String, String> newCookiesMap)
         {
             if (newCookiesMap == null)
             {
@@ -599,7 +601,7 @@ enum CookieStorageType
         }
 
         @Override
-        public Cookie[] asArrayOfCookies(Object cookiesObject)
+        public Cookie[] asArrayOfCookies(Serializable cookiesObject)
         {
             if (cookiesObject == null)
             {
@@ -628,17 +630,17 @@ enum CookieStorageType
     {
         @Override
         @SuppressWarnings("unchecked")
-        public Object putAndMergeCookie(Object preExistentCookies, String cookieName, String cookieValue)
+        public Serializable putAndMergeCookie(Serializable preExistentCookies, String cookieName, String cookieValue)
         {
             final Map<String, String> cookieMap = (Map<String, String>) preExistentCookies;
 
             cookieMap.put(cookieName, cookieValue);
-            return cookieMap;
+            return new ParameterMap(cookieMap);
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public String getCookieValueFromCookies(Object cookiesObject, String cookieName)
+        public String getCookieValueFromCookies(Serializable cookiesObject, String cookieName)
         {
             return ((Map<String, String>) cookiesObject).get(cookieName);
         }
@@ -646,7 +648,7 @@ enum CookieStorageType
         @Override
         @SuppressWarnings("unchecked")
         public void addCookiesToClient(HttpClient client,
-                                       Object cookiesObject,
+                                       Serializable cookiesObject,
                                        String policy,
                                        MuleEvent event,
                                        URI destinationUri)
@@ -680,7 +682,7 @@ enum CookieStorageType
         }
 
         @Override
-        public Object putAndMergeCookie(Object preExistentCookies, Cookie[] newCookiesArray)
+        public Serializable putAndMergeCookie(Serializable preExistentCookies, Cookie[] newCookiesArray)
         {
             if (newCookiesArray == null)
             {
@@ -695,7 +697,7 @@ enum CookieStorageType
         }
 
         @Override
-        public Object putAndMergeCookie(Object preExistentCookies, Map<String, String> newCookiesMap)
+        public Serializable putAndMergeCookie(Serializable preExistentCookies, Map<String, String> newCookiesMap)
         {
             if (newCookiesMap == null)
             {
@@ -711,7 +713,7 @@ enum CookieStorageType
 
         @Override
         @SuppressWarnings("unchecked")
-        public Cookie[] asArrayOfCookies(Object cookiesObject)
+        public Cookie[] asArrayOfCookies(Serializable cookiesObject)
         {
             Map<String, String> cookieMap = (Map<String, String>) cookiesObject;
             Cookie[] arrayOfCookies = new Cookie[cookieMap.size()];
@@ -736,7 +738,7 @@ enum CookieStorageType
      * @param cookiesObject
      * @return
      */
-    public static CookieStorageType resolveCookieStorageType(Object cookiesObject)
+    public static CookieStorageType resolveCookieStorageType(Serializable cookiesObject)
     {
         if (cookiesObject == null || cookiesObject instanceof Cookie[])
         {
@@ -754,37 +756,37 @@ enum CookieStorageType
     }
 
     /**
-     * @see CookieHelper#putAndMergeCookie(Object, String, String)
+     * @see CookieHelper#putAndMergeCookie(Serializable, String, String)
      */
-    public abstract Object putAndMergeCookie(Object preExistentCookies, String cookieName, String cookieValue);
+    public abstract Serializable putAndMergeCookie(Serializable preExistentCookies, String cookieName, String cookieValue);
 
     /**
-     * @see CookieHelper#putAndMergeCookie(Object, Cookie[])
+     * @see CookieHelper#putAndMergeCookie(Serializable, Cookie[])
      */
-    public abstract Object putAndMergeCookie(Object preExistentCookies, Cookie[] newCookiesArray);
+    public abstract Serializable putAndMergeCookie(Serializable preExistentCookies, Cookie[] newCookiesArray);
 
     /**
-     * @see CookieHelper#putAndMergeCookie(Object, Map)
+     * @see CookieHelper#putAndMergeCookie(Serializable, Map)
      */
-    public abstract Object putAndMergeCookie(Object preExistentCookies, Map<String, String> newCookiesMap);
+    public abstract Serializable putAndMergeCookie(Serializable preExistentCookies, Map<String, String> newCookiesMap);
 
     /**
-     * @see CookieHelper#getCookieValueFromCookies(Object, String)
+     * @see CookieHelper#getCookieValueFromCookies(Serializable, String)
      */
-    public abstract String getCookieValueFromCookies(Object cookiesObject, String cookieName);
+    public abstract String getCookieValueFromCookies(Serializable cookiesObject, String cookieName);
 
     /**
-     * @see CookieHelper#addCookiesToClient(HttpClient, Object, String, MuleEvent,
+     * @see CookieHelper#addCookiesToClient(HttpClient, Serializable, String, MuleEvent,
      *      URI)
      */
     public abstract void addCookiesToClient(HttpClient client,
-                                            Object cookiesObject,
+                                            Serializable cookiesObject,
                                             String policy,
                                             MuleEvent event,
                                             URI destinationUri);
 
     /**
-     * @see CookieHelper#asArrayOfCookies(Object)
+     * @see CookieHelper#asArrayOfCookies(Serializable)
      */
-    public abstract Cookie[] asArrayOfCookies(Object cookiesObject);
+    public abstract Cookie[] asArrayOfCookies(Serializable cookiesObject);
 }

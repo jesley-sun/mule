@@ -28,6 +28,7 @@ import org.mule.runtime.core.processor.AbstractRedeliveryPolicy;
 import org.mule.runtime.core.transport.AbstractConnector;
 import org.mule.runtime.core.util.TransportObjectNameHelper;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -231,13 +232,13 @@ public class DynamicOutboundEndpoint implements OutboundEndpoint
     }
 
     @Override
-    public Map getProperties()
+    public Map<String, Serializable> getProperties()
     {
         return prototypeEndpoint.getProperties();
     }
 
     @Override
-    public Object getProperty(Object key)
+    public Serializable getProperty(Object key)
     {
         return prototypeEndpoint.getProperty(key);
     }

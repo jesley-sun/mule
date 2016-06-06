@@ -8,7 +8,6 @@ package org.mule.runtime.transport.file;
 
 import org.mule.runtime.core.DefaultMuleEvent;
 import org.mule.runtime.core.DefaultMuleMessage;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.MuleMessage;
@@ -182,8 +181,8 @@ public class FileMessageRequester extends AbstractMessageRequester
                     logger.error("File being read disappeared!", e);
                     return null;
                 }
-                returnMessage.setProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, originalSourceFileName, PropertyScope.INBOUND);
-                returnMessage.setProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory, PropertyScope.INBOUND);
+                returnMessage.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_FILENAME, originalSourceFileName);
+                returnMessage.setOutboundProperty(FileConnector.PROPERTY_ORIGINAL_DIRECTORY, originalSourceDirectory);
 
                 if (!fileConnector.isStreaming())
                 {

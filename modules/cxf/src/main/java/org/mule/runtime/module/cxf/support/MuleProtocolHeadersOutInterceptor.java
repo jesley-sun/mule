@@ -16,6 +16,7 @@ import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.module.cxf.CxfConstants;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +84,7 @@ public class MuleProtocolHeadersOutInterceptor
 
     private void extractAndSet(Message message, MuleMessage muleMsg, String cxfHeader, String muleHeader)
     {
-        Object val = message.get(cxfHeader);
+        Serializable val = (Serializable) message.get(cxfHeader);
         if (val != null)
         {
             muleMsg.setOutboundProperty(muleHeader, val);

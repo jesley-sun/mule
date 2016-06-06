@@ -10,11 +10,12 @@ import org.mule.runtime.core.api.MuleEvent;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.lifecycle.InitialisationException;
 import org.mule.runtime.core.api.transformer.TransformerException;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.transformer.AbstractMessageTransformer;
 import org.mule.runtime.core.transformer.types.DataTypeFactory;
 import org.mule.runtime.core.util.AttributeEvaluator;
 import org.mule.runtime.core.util.WildcardAttributeEvaluator;
+
+import java.io.Serializable;
 
 public class CopyPropertiesTransformer extends AbstractMessageTransformer
 {
@@ -45,7 +46,7 @@ public class CopyPropertiesTransformer extends AbstractMessageTransformer
                 @Override
                 public void processMatch(String matchedValue)
                 {
-                    message.setOutboundProperty(matchedValue, message.getInboundProperty(matchedValue), message.getPropertyDataType(matchedValue, PropertyScope.INBOUND));
+                    message.setOutboundProperty(matchedValue, message.getInboundProperty(matchedValue), message.getInboundPropertyDataType(matchedValue));
                 }
             });
         }
@@ -55,10 +56,10 @@ public class CopyPropertiesTransformer extends AbstractMessageTransformer
             if (keyValue != null)
             {
                 String propertyName = keyValue.toString();
-                Object propertyValue = message.getInboundProperty(propertyName);
+                Serializable propertyValue = message.getInboundProperty(propertyName);
                 if (propertyValue != null)
                 {
-                    message.setOutboundProperty(propertyName, propertyValue, message.getPropertyDataType(propertyName, PropertyScope.INBOUND));
+                    message.setOutboundProperty(propertyName, propertyValue, message.getInboundPropertyDataType(propertyName));
                 }
                 else
                 {

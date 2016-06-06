@@ -11,7 +11,6 @@ import org.mule.runtime.core.DefaultMuleEvent;
 import org.mule.runtime.core.DefaultMuleEventEndpointUtils;
 import org.mule.runtime.core.DefaultMuleMessage;
 import org.mule.runtime.core.OptimizedRequestContext;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.RequestContext;
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.MessagingException;
@@ -266,7 +265,7 @@ public class OldHttpMessageReceiver extends TcpMessageReceiver
                 path = path.substring(0, i);
             }
 
-            message.setProperty(HttpConnector.HTTP_REQUEST_PATH_PROPERTY, path, PropertyScope.INBOUND);
+            message.setOutboundProperty(HttpConnector.HTTP_REQUEST_PATH_PROPERTY, path);
 
             if (logger.isDebugEnabled())
             {
@@ -282,17 +281,17 @@ public class OldHttpMessageReceiver extends TcpMessageReceiver
             if (receiver != null)
             {
                 String contextPath = HttpConnector.normalizeUrl(receiver.getEndpointURI().getPath());
-                message.setProperty(HttpConnector.HTTP_CONTEXT_PATH_PROPERTY,
-                                    contextPath,
-                                    PropertyScope.INBOUND);
+                message.setOutboundProperty(HttpConnector.HTTP_CONTEXT_PATH_PROPERTY,
+                                            contextPath
+                );
 
-                message.setProperty(HttpConnector.HTTP_CONTEXT_URI_PROPERTY,
-                                    receiver.getEndpointURI().getAddress(),
-                                    PropertyScope.INBOUND);
+                message.setOutboundProperty(HttpConnector.HTTP_CONTEXT_URI_PROPERTY,
+                                            receiver.getEndpointURI().getAddress()
+                );
 
-                message.setProperty(HttpConnector.HTTP_RELATIVE_PATH_PROPERTY,
-                                    processRelativePath(contextPath, path),
-                                    PropertyScope.INBOUND);
+                message.setOutboundProperty(HttpConnector.HTTP_RELATIVE_PATH_PROPERTY,
+                                            processRelativePath(contextPath, path)
+                );
 
                 ExecutionTemplate<MuleEvent> executionTemplate = createExecutionTemplate();
 
@@ -471,7 +470,7 @@ public class OldHttpMessageReceiver extends TcpMessageReceiver
 
         protected void preRouteMessage(MuleMessage message) throws MessagingException
         {
-            message.setProperty(MuleProperties.MULE_REMOTE_CLIENT_ADDRESS, remoteClientAddress, PropertyScope.INBOUND);
+            message.setOutboundProperty(MuleProperties.MULE_REMOTE_CLIENT_ADDRESS, remoteClientAddress);
         }
 
         @Override

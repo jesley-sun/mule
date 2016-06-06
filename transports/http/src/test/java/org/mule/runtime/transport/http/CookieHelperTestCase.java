@@ -6,25 +6,22 @@
  */
 package org.mule.runtime.transport.http;
 
-import org.mule.runtime.transport.http.CookieHelper;
-import org.mule.runtime.transport.http.CookieStorageType;
-import org.mule.tck.junit4.AbstractMuleTestCase;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.cookie.MalformedCookieException;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.mule.runtime.module.http.internal.ParameterMap;
+import org.mule.tck.junit4.AbstractMuleTestCase;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.httpclient.Cookie;
+import org.apache.commons.httpclient.cookie.MalformedCookieException;
+import org.junit.Test;
 
 public class CookieHelperTestCase extends AbstractMuleTestCase
 {
@@ -38,15 +35,15 @@ public class CookieHelperTestCase extends AbstractMuleTestCase
     @SuppressWarnings("unchecked")
     public void testPutAndMergeCookieObjectMapOfStringString_CookiesInMap_NewCookiesInMap()
     {
-        Map<String, String> cookiesObject = new HashMap<String, String>();
+        ParameterMap cookiesObject = new ParameterMap();
         cookiesObject.put(COOKIE_1_NAME, COOKIE_1_ORIGINAL_VALUE);
 
         assertEquals(1, cookiesObject.size());
 
-        Map<String, String> newCookiesMap = new HashMap<String, String>();
+        ParameterMap newCookiesMap = new ParameterMap();
         newCookiesMap.put(COOKIE_1_NAME, COOKIE_1_NEW_VALUE);
         newCookiesMap.put(COOKIE_2_NAME, COOKIE_2_VALUE);
-        cookiesObject = (Map<String, String>) CookieHelper.putAndMergeCookie(cookiesObject, newCookiesMap);
+        cookiesObject = (ParameterMap) CookieHelper.putAndMergeCookie(cookiesObject, newCookiesMap);
 
         assertEquals(2, cookiesObject.size());
         assertEquals(COOKIE_1_NEW_VALUE, cookiesObject.get(COOKIE_1_NAME));
@@ -87,7 +84,7 @@ public class CookieHelperTestCase extends AbstractMuleTestCase
     @SuppressWarnings("unchecked")
     public void testPutAndMergeCookieObjectCookieArray_CookiesInMap_NewCookiesInArray()
     {
-        Map<String, String> cookiesObject = new HashMap<String, String>();
+        ParameterMap cookiesObject = new ParameterMap();
         cookiesObject.put(COOKIE_1_NAME, COOKIE_1_ORIGINAL_VALUE);
 
         assertEquals(1, cookiesObject.size());
@@ -95,7 +92,7 @@ public class CookieHelperTestCase extends AbstractMuleTestCase
         Cookie[] newCookiesArray = new Cookie[]{new Cookie(null, COOKIE_1_NAME, COOKIE_1_NEW_VALUE),
             new Cookie(null, COOKIE_2_NAME, COOKIE_2_VALUE)};
 
-        cookiesObject = (Map<String, String>) CookieHelper.putAndMergeCookie(cookiesObject, newCookiesArray);
+        cookiesObject = (ParameterMap) CookieHelper.putAndMergeCookie(cookiesObject, newCookiesArray);
 
         assertEquals(2, cookiesObject.size());
         assertEquals(COOKIE_1_NEW_VALUE, cookiesObject.get(COOKIE_1_NAME));
@@ -147,7 +144,7 @@ public class CookieHelperTestCase extends AbstractMuleTestCase
     @Test
     public void testAsArrayOfCookies_CookiesInMap() throws Exception
     {
-        Map<String, String> cookiesObject = new LinkedHashMap<String, String>();
+        ParameterMap cookiesObject = new ParameterMap();
         cookiesObject.put(COOKIE_1_NAME, COOKIE_1_ORIGINAL_VALUE);
         cookiesObject.put(COOKIE_2_NAME, COOKIE_2_VALUE);
 
@@ -177,7 +174,7 @@ public class CookieHelperTestCase extends AbstractMuleTestCase
 
         try
         {
-            CookieStorageType.resolveCookieStorageType(new Object());
+            CookieStorageType.resolveCookieStorageType(new String());
             fail("It should have thrown an exception since Object it is not a valid type");
         }
         catch (IllegalArgumentException e)

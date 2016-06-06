@@ -12,7 +12,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import org.mule.runtime.core.MessageExchangePattern;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.TransformationService;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.MuleEvent;
@@ -27,7 +26,6 @@ import org.mule.runtime.core.api.transport.MessageReceiver;
 import org.mule.runtime.core.endpoint.MuleEndpointURI;
 import org.mule.runtime.core.session.NullSessionHandler;
 import org.mule.runtime.core.transaction.MuleTransactionConfig;
-import org.mule.runtime.core.transport.AbstractConnector;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
 import org.mule.tck.testmodels.mule.TestMessageReceiver;
@@ -91,7 +89,7 @@ public class MessageReceiverTestCase extends AbstractMuleTestCase
         MuleMessage request = Mockito.mock(MuleMessage.class);
         when(request.getMuleContext()).thenReturn(muleContext);
         when(
-            request.getProperty(Mockito.anyString(), any(PropertyScope.class), Mockito.eq(false)))
+            request.getOutboundProperty(Mockito.anyString(), Mockito.eq(false)))
             .thenReturn(Boolean.FALSE);
         return request;
     }

@@ -9,7 +9,6 @@ package org.mule.runtime.core.mule.model;
 import static org.junit.Assert.assertEquals;
 
 import org.mule.runtime.api.message.NullPayload;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MuleEventContext;
 import org.mule.runtime.core.api.model.InvocationResult;
 import org.mule.runtime.core.model.resolvers.MethodHeaderPropertyEntryPointResolver;
@@ -35,7 +34,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
     public void testMethodSetPass() throws Exception
     {
         MuleEventContext ctx = getTestEventContext("blah");
-        ctx.getMessage().setProperty("method", "someBusinessMethod", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("method", "someBusinessMethod");
 
         InvocationResult result = resolver.invoke(new MultiplePayloadsTestObject(), ctx);
         assertInvocationWasSuccessful(result);
@@ -45,7 +44,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
     public void testMethodSetWithNoArgsPass() throws Exception
     {
         MuleEventContext ctx = getTestEventContext(NullPayload.getInstance());
-        ctx.getMessage().setProperty("method", "wash", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("method", "wash");
 
         InvocationResult result = resolver.invoke(new Apple(), ctx);
         assertInvocationWasSuccessful(result);
@@ -58,7 +57,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
         resolver.setMethodProperty("serviceMethod");
 
         MuleEventContext ctx = getTestEventContext("blah");
-        ctx.getMessage().setProperty("serviceMethod", "someBusinessMethod", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("serviceMethod", "someBusinessMethod");
 
         InvocationResult result = resolver.invoke(new MultiplePayloadsTestObject(), ctx);
         assertInvocationWasSuccessful(result);
@@ -70,7 +69,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
         resolver.setMethodProperty("serviceMethod");
 
         MuleEventContext ctx = getTestEventContext("blah");
-        ctx.getMessage().setProperty("serviceMethod", "noMethod", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("serviceMethod", "noMethod");
 
         InvocationResult result = resolver.invoke(new MultiplePayloadsTestObject(), ctx);
         assertInvocationFailed(result);
@@ -82,7 +81,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
         resolver.setMethodProperty("serviceMethod");
 
         MuleEventContext ctx = getTestEventContext("blah");
-        ctx.getMessage().setProperty("myMethod", "someBusinessMethod", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("myMethod", "someBusinessMethod");
 
         InvocationResult result = resolver.invoke(new MultiplePayloadsTestObject(), ctx);
         assertInvocationFailed(result);
@@ -92,7 +91,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
     public void testMethodPropertyMismatch() throws Exception
     {
         MuleEventContext ctx = getTestEventContext("blah");
-        ctx.getMessage().setProperty("method", "noMethod", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("method", "noMethod");
 
         InvocationResult result = resolver.invoke(new MultiplePayloadsTestObject(), ctx);
         assertInvocationFailed(result);
@@ -107,7 +106,7 @@ public class MethodHeaderEntryPointResolverTestCase extends AbstractMuleContextT
     public void testMethodPropertyParameterAssignableFromPayload() throws Exception
     {
         MuleEventContext ctx = getTestEventContext(new Apple());
-        ctx.getMessage().setProperty("method", "wash", PropertyScope.INBOUND);
+        ctx.getMessage().setOutboundProperty("method", "wash");
 
         InvocationResult result = resolver.invoke(new TestFruitCleaner(), ctx);
         assertInvocationWasSuccessful(result);

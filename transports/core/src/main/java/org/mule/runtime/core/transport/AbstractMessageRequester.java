@@ -8,7 +8,6 @@ package org.mule.runtime.core.transport;
 
 import org.mule.runtime.api.message.NullPayload;
 import org.mule.runtime.core.DefaultMuleMessage;
-import org.mule.runtime.core.PropertyScope;
 import org.mule.runtime.core.api.MuleException;
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.runtime.core.api.config.MuleProperties;
@@ -100,7 +99,7 @@ public abstract class AbstractMessageRequester extends AbstractTransportMessageH
                 if (rootId != null)
                 {
                     result.setMessageRootId(rootId);
-                    result.removeProperty(MuleProperties.MULE_ROOT_MESSAGE_ID_PROPERTY, PropertyScope.INBOUND);
+                    result.removeOutboundProperty(MuleProperties.MULE_ROOT_MESSAGE_ID_PROPERTY);
                 }
                 if (beginNotification != null)
                 {

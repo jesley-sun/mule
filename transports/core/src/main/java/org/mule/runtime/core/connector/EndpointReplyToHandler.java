@@ -27,6 +27,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class EndpointReplyToHandler extends DefaultReplyToHandler
@@ -67,7 +68,7 @@ public class EndpointReplyToHandler extends DefaultReplyToHandler
         List<String> responseProperties = endpoint.getResponseProperties();
         for (String propertyName : responseProperties)
         {
-            Object propertyValue = event.getMessage().getInboundProperty(propertyName);
+            Serializable propertyValue = event.getMessage().getInboundProperty(propertyName);
             if (propertyValue != null)
             {
                 replyToEvent.getMessage().setOutboundProperty(propertyName, propertyValue);

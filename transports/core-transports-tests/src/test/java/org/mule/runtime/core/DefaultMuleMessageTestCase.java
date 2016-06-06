@@ -6,48 +6,14 @@
  */
 package org.mule.runtime.core;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mule.runtime.core.PropertyScope.OUTBOUND;
-
 import org.mule.runtime.core.api.MuleMessage;
 import org.mule.tck.junit4.AbstractMuleContextEndpointTestCase;
-
-import org.junit.Test;
 
 public class DefaultMuleMessageTestCase extends AbstractMuleContextEndpointTestCase
 {
 
     public static final String FOO_PROPERTY = "foo";
-
-
-    @Test
-    public void testFindPropertiesInAnyScope() throws Exception
-    {
-        MuleMessage message = createMuleMessage();
-        //Not sure why this test adds this property
-        message.removeProperty("MuleMessage", OUTBOUND);
-
-        // We need a session and current event for this test
-        final DefaultMuleEvent event = new DefaultMuleEvent(message, getTestFlow());
-        DefaultMuleEventEndpointUtils.populateFieldsFromInboundEndpoint(event, getTestInboundEndpoint(FOO_PROPERTY));
-        RequestContext.setEvent(event);
-
-        message.setOutboundProperty(FOO_PROPERTY, "fooOutbound");
-        message.setProperty(FOO_PROPERTY, "fooInbound", PropertyScope.INBOUND);
-
-
-        assertEquals(1, message.getOutboundPropertyNames().size());
-        assertEquals(1, message.getInboundPropertyNames().size());
-
-        String value = message.findPropertyInAnyScope(FOO_PROPERTY, null);
-        assertEquals("fooOutbound", value);
-
-        message.removeProperty(FOO_PROPERTY, OUTBOUND);
-
-        value = message.findPropertyInAnyScope(FOO_PROPERTY, null);
-        assertEquals("fooInbound", value);
-    }
 
     private MuleMessage createMuleMessage()
     {
@@ -59,8 +25,8 @@ public class DefaultMuleMessageTestCase extends AbstractMuleContextEndpointTestC
     public void testInboundPropertyNamesRemoveMmutable() throws Exception
     {
         MuleMessage message = createMuleMessage();
-        message.setProperty(FOO_PROPERTY, "bar", PropertyScope.INBOUND);
-        message.getPropertyNames(PropertyScope.INBOUND).remove(FOO_PROPERTY);
+        message.setOutboundProperty(FOO_PROPERTY, "bar");
+        message.getOutboundPropertyNames().remove(FOO_PROPERTY);
         assertNull(message.getInboundProperty(FOO_PROPERTY));
     }
 
@@ -68,7 +34,7 @@ public class DefaultMuleMessageTestCase extends AbstractMuleContextEndpointTestC
     {
         MuleMessage message = createMuleMessage();
         message.setOutboundProperty(FOO_PROPERTY, "bar");
-        message.getPropertyNames(OUTBOUND).remove(FOO_PROPERTY);
+        message.getOutboundPropertyNames().remove(FOO_PROPERTY);
         assertNull(message.getOutboundProperty(FOO_PROPERTY));
     }
 }

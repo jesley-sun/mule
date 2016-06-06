@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Map;
@@ -436,13 +437,13 @@ public class Scriptable implements Initialisable, MuleContextAware
         @Override
         public void clear()
         {
-            message.clearProperties(propertyScope);
+            message.clearOutboundProperties();
         }
 
         @Override
         public boolean containsKey(Object key)
         {
-            return message.getPropertyNames(propertyScope).contains(key);
+            return message.getOutboundPropertyNames().contains(key);
         }
 
         @Override
@@ -460,19 +461,19 @@ public class Scriptable implements Initialisable, MuleContextAware
         @Override
         public Object get(Object key)
         {
-            return message.getProperty((String) key, propertyScope);
+            return message.getOutboundProperty((String) key);
         }
 
         @Override
         public boolean isEmpty()
         {
-            return message.getPropertyNames(propertyScope).isEmpty();
+            return message.getOutboundPropertyNames().isEmpty();
         }
 
         @Override
         public Set<String> keySet()
         {
-            return message.getPropertyNames(propertyScope);
+            return message.getOutboundPropertyNames();
         }
 
         @Override
@@ -482,9 +483,13 @@ public class Scriptable implements Initialisable, MuleContextAware
             {
                 throw new UnsupportedOperationException("Inbound message properties are read-only");
             }
+            else if(!(value instanceof Serializable))
+            {
+                throw new UnsupportedOperationException("Inbound message properties value must be Serializable");
+            }
             else
             {
-                message.setProperty(key, value, propertyScope);
+                message.setOutboundProperty(key, (Serializable) value);
                 return value;
             }
         }
@@ -507,14 +512,14 @@ public class Scriptable implements Initialisable, MuleContextAware
             }
             else
             {
-                return message.removeProperty((String) key, propertyScope);
+                return message.removeOutboundProperty((String) key);
             }
         }
 
         @Override
         public int size()
         {
-            return message.getPropertyNames(propertyScope).size();
+            return message.getOutboundPropertyNames().size();
         }
 
         @Override

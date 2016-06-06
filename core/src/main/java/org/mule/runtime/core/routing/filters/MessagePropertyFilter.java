@@ -62,7 +62,7 @@ public class MessagePropertyFilter implements Filter
         {
             return false;
         }
-        Object value = message.getProperty(propertyName, scope);
+        Object value = message.getOutboundProperty(propertyName);
         boolean match;
         if (value == null)
         {
