@@ -67,6 +67,6 @@ public class IMAPProvider extends AbstractRetrieverProvider implements Connectio
     @Override
     public ConnectionHandlingStrategy<RetrieverConnection> getHandlingStrategy(ConnectionHandlingStrategyFactory<IMAPConfiguration, RetrieverConnection> connectionHandlingStrategyFactory)
     {
-        return connectionHandlingStrategyFactory.cached();
+        return connectionHandlingStrategyFactory.supportsPooling();
     }
 }

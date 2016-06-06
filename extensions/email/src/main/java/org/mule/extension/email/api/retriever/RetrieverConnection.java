@@ -19,7 +19,6 @@ import java.util.Map;
 
 import javax.mail.Folder;
 import javax.mail.MessagingException;
-import javax.mail.Session;
 import javax.mail.Store;
 
 /**
@@ -36,7 +35,7 @@ public class RetrieverConnection extends AbstractEmailConnection
     /**
      * Creates a new instance of the of the {@link RetrieverConnection}.
      *
-     * @param protocol the desired protocol to use.
+     * @param protocol the desired protocol to use. One of imap or pop3 (and its secure versions)
      * @param username the username to establish the connection.
      * @param password the password corresponding to the {@code username}.
      * @param host the host name of the mail server
@@ -99,15 +98,6 @@ public class RetrieverConnection extends AbstractEmailConnection
                 throw new EmailException("Closing the store associated to this connection", e);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Session getSession()
-    {
-        return session;
     }
 
     /**

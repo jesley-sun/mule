@@ -23,7 +23,7 @@ public class SenderConnection extends AbstractEmailConnection
     /**
      * Creates a new instance.
      *
-     * @param protocol          the protocol used to send mails.
+     * @param protocol          the protocol used to send mails. Smtp or smtps
      * @param username          the username to establish connection with the mail server.
      * @param password          the password corresponding to the {@code username}
      * @param host              the host name of the mail server.
